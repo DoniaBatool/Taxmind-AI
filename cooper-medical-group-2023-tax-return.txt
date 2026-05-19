@@ -1,0 +1,107 @@
+================================================================================
+FORM 1120-S - U.S. INCOME TAX RETURN FOR AN S CORPORATION
+Tax Year: January 1, 2023 - December 31, 2023
+================================================================================
+
+CORPORATION INFORMATION
+Corporation Name: Cooper Medical Group Inc.
+EIN: 55-XXXXXXX
+Business Type: Medical Practice (S-Corporation)
+Business Code: 621111
+Address: 2200 Medical Plaza Drive, Chicago, IL 60601
+Accounting Method: Accrual
+S-Election Date: January 1, 2018
+Number of Shareholders: 2
+
+SHAREHOLDERS:
+1. Dr. James Cooper   - 60% - President & Chief Medical Officer
+2. Dr. Aisha Patel    - 40% - Vice President & Physician
+
+================================================================================
+FORM 1120-S - INCOME
+================================================================================
+Line 1a - Gross receipts or sales:                      $1,215,000
+Line 2  - Cost of goods sold:                            ($343,000)
+Line 3  - Gross profit:                                   $872,000
+Line 4  - Net gain (Form 4797):                                $0
+Line 5  - Other income:                                        $0
+Line 6  - TOTAL INCOME:                                   $872,000
+
+================================================================================
+DEDUCTIONS
+================================================================================
+Line 7  - Compensation of officers:                      $295,000
+Line 8  - Salaries and wages (other):                    $232,000
+Line 9  - Repairs and maintenance:                         $8,200
+Line 10 - Bad debts:                                      $12,500
+Line 11 - Rents:                                          $84,000
+Line 12 - Taxes and licenses:                             $18,400
+Line 13 - Interest:                                            $0
+Line 14 - Depreciation:                                   $22,000
+Line 17 - Pension/profit-sharing plans:                   $35,000
+Line 18 - Employee benefit programs:                      $28,000
+Line 19 - Other deductions:                               $86,600
+Line 20 - TOTAL DEDUCTIONS:                              $741,700
+Line 21 - ORDINARY BUSINESS INCOME:                      $130,300
+
+================================================================================
+OFFICER COMPENSATION DETAIL (Line 7 - $295,000)
+================================================================================
+Dr. James Cooper     SSN XXX-XX-8821    $177,000    60% time
+Dr. Aisha Patel      SSN XXX-XX-4432    $118,000    60% time
+
+================================================================================
+SCHEDULE K - SHAREHOLDERS' PRO RATA SHARE ITEMS
+================================================================================
+Line 1 - Ordinary business income:                       $130,300
+
+SHAREHOLDER K-1 ALLOCATIONS:
+Dr. James Cooper  (60%):  Ordinary income   $78,180
+Dr. Aisha Patel   (40%):  Ordinary income   $52,120
+
+================================================================================
+OTHER DEDUCTIONS DETAIL (Line 19 - $86,600)
+================================================================================
+Medical malpractice insurance:                            $42,000
+IT systems and EMR software:                              $24,000
+Marketing and patient acquisition:                        $12,000
+Continuing medical education:                             $10,000
+Miscellaneous:                                             $7,200
+Less: Captured in other lines:                            ($8,600)
+NET OTHER DEDUCTIONS:                                     $86,600
+
+================================================================================
+BALANCE SHEET (Schedule L)
+================================================================================
+Beginning of Year:
+  Cash:                                                  $148,000
+  Accounts Receivable:                                   $192,000
+  Medical Equipment (net):                               $188,000
+  Total Assets:                                          $528,000
+  Accounts Payable:                                       $42,000
+  Shareholders' Equity:                                  $486,000
+
+End of Year:
+  Cash:                                                  $182,000
+  Accounts Receivable:                                   $208,000
+  Medical Equipment (net):                               $174,000
+  Total Assets:                                          $564,000
+  Accounts Payable:                                       $38,000
+  Shareholders' Equity:                                  $526,000
+
+================================================================================
+SCHEDULE B - ADDITIONAL INFORMATION
+================================================================================
+Total receipts for year:                               $1,215,000
+Total assets at year end:                                $564,000
+Accrual basis accounting: Yes
+Any change in ownership during year: No
+Any distributions made: Yes  Amount: $80,000
+
+================================================================================
+PREPARER INFORMATION
+================================================================================
+Prepared by: MedPro Tax Advisors CPA
+PTIN: P05544321
+Date prepared: March 15, 2024
+================================================================================

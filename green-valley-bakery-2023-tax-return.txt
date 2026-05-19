@@ -1,0 +1,92 @@
+================================================================================
+FORM 1040 - SCHEDULE C (SOLE PROPRIETORSHIP)
+U.S. Return of Sole Proprietor Business Income
+Tax Year: January 1, 2023 - December 31, 2023
+================================================================================
+
+TAXPAYER INFORMATION
+Name: Sarah Mitchell
+SSN: XXX-XX-4821
+Business Name: Green Valley Bakery
+EIN: 82-XXXXXXX
+Principal Business: Retail Bakery & Catering
+Business Code: 311810
+Accounting Method: Cash
+Business Address: 1482 Elm Street, Portland, OR 97201
+
+================================================================================
+PART I - INCOME
+================================================================================
+Line 1  - Gross receipts or sales:                        $450,000
+Line 2  - Returns and allowances:                          ($8,200)
+Line 3  - Subtract Line 2 from Line 1:                   $441,800
+Line 4  - Cost of goods sold (Line 42):                  ($220,400)
+Line 5  - Gross profit:                                   $221,400
+Line 6  - Other income:                                        $0
+Line 7  - GROSS INCOME:                                   $221,400
+
+================================================================================
+PART II - EXPENSES
+================================================================================
+Line 8  - Advertising:                                     $8,500
+Line 9  - Car and truck expenses:                              $0
+Line 10 - Commissions and fees:                                $0
+Line 11 - Contract labor:                                  $2,400
+Line 13 - Depreciation:                                    $4,200
+Line 14 - Employee benefit programs:                       $6,800
+Line 15 - Insurance (other than health):                   $6,400
+Line 16 - Interest (mortgage):                                 $0
+Line 17 - Legal and professional services:                 $4,800
+Line 18 - Office expense:                                  $1,200
+Line 20 - Rent or lease (vehicles, machinery):                 $0
+Line 20b - Rent or lease (other business property):       $52,000
+Line 21 - Repairs and maintenance:                         $3,100
+Line 22 - Supplies:                                        $2,800
+Line 23 - Taxes and licenses:                              $3,400
+Line 24 - Travel:                                              $0
+Line 25 - Utilities:                                      $11,200
+Line 26 - Wages (less employment credits):                $72,000
+Line 27a - Other expenses (see Part V):                    $9,800
+Line 28 - TOTAL EXPENSES:                                $167,800
+Line 29 - Tentative profit:                               $53,600
+Line 30 - Home office deduction:                               $0
+Line 31 - NET PROFIT OR LOSS:                             $53,600
+
+================================================================================
+PART III - COST OF GOODS SOLD
+================================================================================
+Line 33 - Inventory at beginning of year:                  $8,200
+Line 36 - Cost of items purchased (ingredients):         $118,000
+Line 37 - Cost of labor (kitchen):                        $88,000
+Line 39 - Other costs (packaging):                        $14,200
+Line 40 - Subtract closing inventory:                     ($8,000)
+Line 42 - COST OF GOODS SOLD:                            $220,400
+
+================================================================================
+PART V - OTHER EXPENSES DETAIL (Line 27a)
+================================================================================
+Miscellaneous operating expenses:                          $9,800
+(includes: uniforms, cleaning supplies, petty cash items)
+
+================================================================================
+SELF-EMPLOYMENT TAX SUMMARY
+================================================================================
+Net profit subject to SE tax:                             $53,600
+SE Tax (Schedule SE):                                      $7,579
+Deductible portion of SE tax:                              $3,790
+Adjusted net income:                                      $49,810
+
+================================================================================
+DEPRECIATION SCHEDULE (Form 4562)
+================================================================================
+Commercial oven (acquired 2021):        Basis $28,000   Current depr: $2,800
+Refrigeration unit (acquired 2022):     Basis $14,000   Current depr: $1,400
+Total depreciation:                                        $4,200
+
+================================================================================
+PREPARER INFORMATION
+================================================================================
+Prepared by: Williams & Associates CPA
+PTIN: P01234567
+Date prepared: March 12, 2024
+================================================================================

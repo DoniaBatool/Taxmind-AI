@@ -1,0 +1,22 @@
+category,subcategory,amount,prior_year_amount,notes
+Income,Patient Services,892000,845000,Medical consultations procedures
+Income,Insurance Reimbursements,312000,298000,Medicare Medicaid private insurance
+Income,Lab & Diagnostics,78000,72000,In-house lab tests
+Income,Total Revenue,1282000,1215000,
+COGS,Medical Supplies,142000,135000,Consumables equipment supplies
+COGS,Lab Costs,38000,36000,Lab reagents materials
+COGS,Contract Medical Staff,185000,172000,Specialist physicians
+COGS,Total COGS,365000,343000,
+Gross Profit,,917000,872000,
+Expenses,Rent - Clinic,84000,84000,Two clinic locations
+Expenses,Utilities,22000,19500,Medical equipment power
+Expenses,Salaries - Admin,248000,232000,Administrative nursing billing staff
+Expenses,Officer Compensation,320000,295000,Dr Cooper and Dr Patel
+Expenses,Medical Malpractice Insurance,42000,42000,Required coverage
+Expenses,Marketing,18000,12000,Local advertising referral programs
+Expenses,IT & Software,28000,24000,EMR system billing software
+Expenses,Accounting & Legal,16000,16000,CPA and compliance
+Expenses,Continuing Education,12000,10000,CME credits staff training
+Expenses,Miscellaneous,8500,7200,Various
+Expenses,Total Expenses,798500,741700,
+Net Income,,118500,130300,

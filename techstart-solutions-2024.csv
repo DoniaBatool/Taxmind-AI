@@ -1,0 +1,21 @@
+category,subcategory,amount,prior_year_amount,notes
+Income,Software Licenses,312000,280000,SaaS subscriptions annual
+Income,Consulting Services,148000,195000,Hourly consulting engagements
+Income,Maintenance Contracts,67500,62000,Support and maintenance
+Income,Total Revenue,527500,537000,
+COGS,Developer Salaries,198000,185000,Engineering team
+COGS,Cloud Infrastructure,42000,31000,AWS and Azure costs
+COGS,Software Licenses COGS,18000,16500,Third-party tools
+COGS,Total COGS,258000,232500,
+Gross Profit,,269500,304500,
+Expenses,Rent & Office,36000,36000,Coworking space lease
+Expenses,Utilities,4200,3800,Office expenses
+Expenses,Salaries - Admin,72000,68000,Operations and sales staff
+Expenses,Marketing,45000,28000,Digital ads trade shows
+Expenses,R&D,88000,42000,New product development
+Expenses,Insurance,8800,8800,Professional liability
+Expenses,Accounting & Legal,12000,9500,CPA audit legal
+Expenses,Travel & Entertainment,18500,22000,Client meetings conferences
+Expenses,Miscellaneous,14200,6800,Various
+Expenses,Total Expenses,298700,225000,
+Net Income,,-29200,79500,

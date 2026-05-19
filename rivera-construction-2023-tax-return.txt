@@ -1,0 +1,122 @@
+================================================================================
+FORM 1120-S - U.S. INCOME TAX RETURN FOR AN S CORPORATION
+Tax Year: January 1, 2023 - December 31, 2023
+================================================================================
+
+CORPORATION INFORMATION
+Corporation Name: Rivera Construction Co. Inc.
+EIN: 33-XXXXXXX
+Business Type: General Contractor (S-Corporation)
+Business Code: 236220
+Address: 8800 Industrial Blvd, Unit 12, Phoenix, AZ 85043
+Accounting Method: Cash
+S-Election Date: March 15, 2019
+Number of Shareholders: 2
+
+SHAREHOLDERS:
+1. Carlos Rivera     - 55% - President & General Contractor
+2. Miguel Rivera     - 45% - Vice President & Field Supervisor
+
+================================================================================
+FORM 1120-S - INCOME
+================================================================================
+Line 1a - Gross receipts or sales:                      $1,095,000
+Line 2  - Cost of goods sold:                            ($773,000)
+Line 3  - Gross profit:                                   $322,000
+Line 4  - Net gain (Form 4797):                                $0
+Line 5  - Other income:                                        $0
+Line 6  - TOTAL INCOME:                                   $322,000
+
+================================================================================
+DEDUCTIONS
+================================================================================
+Line 7  - Compensation of officers:                      $185,000
+Line 8  - Salaries and wages (other):                     $62,000
+Line 9  - Repairs and maintenance:                         $4,200
+Line 10 - Bad debts:                                       $6,800
+Line 11 - Rents:                                          $28,000
+Line 12 - Taxes and licenses:                              $9,500
+Line 13 - Interest:                                        $2,100
+Line 14 - Depreciation:                                   $18,000
+Line 17 - Pension/profit-sharing plans:                        $0
+Line 18 - Employee benefit programs:                       $8,200
+Line 19 - Other deductions:                              $133,800
+Line 20 - TOTAL DEDUCTIONS:                              $395,600
+Line 21 - ORDINARY BUSINESS INCOME (LOSS):               ($73,600)
+
+================================================================================
+OFFICER COMPENSATION DETAIL (Line 7 - $185,000)
+================================================================================
+Carlos Rivera    SSN XXX-XX-2211    $102,000    Full time
+Miguel Rivera    SSN XXX-XX-3344     $83,000    Full time
+
+================================================================================
+COST OF GOODS SOLD DETAIL
+================================================================================
+Materials (lumber, concrete, steel):                     $285,000
+Subcontractor costs:                                     $268,000
+Field labor wages:                                       $182,000
+Equipment rental:                                         $38,000
+TOTAL COGS:                                              $773,000
+
+================================================================================
+OTHER DEDUCTIONS DETAIL (Line 19 - $133,800)
+================================================================================
+Vehicles and fuel:                                        $32,000
+General liability insurance:                              $36,000
+Workers compensation insurance:                           $12,000
+Permits and licenses:                                      $9,500
+Marketing and bids:                                        $4,500
+Accounting and legal:                                     $10,000
+Miscellaneous job site expenses:                           $8,800
+Employee benefits and uniforms:                            $8,200
+Less: Captured in other deduction lines:                  ($7,200)
+NET OTHER DEDUCTIONS:                                    $133,800
+
+================================================================================
+SCHEDULE K - SHAREHOLDERS' PRO RATA SHARE ITEMS
+================================================================================
+Line 1 - Ordinary business loss:                         ($73,600)
+
+SHAREHOLDER K-1 ALLOCATIONS:
+Carlos Rivera   (55%):  Ordinary loss  ($40,480)
+Miguel Rivera   (45%):  Ordinary loss  ($33,120)
+
+================================================================================
+BALANCE SHEET (Schedule L)
+================================================================================
+Beginning of Year:
+  Cash:                                                   $42,000
+  Accounts Receivable:                                   $128,000
+  Equipment (net of depreciation):                       $185,000
+  Total Assets:                                          $355,000
+  Line of Credit:                                         $85,000
+  Accounts Payable:                                       $62,000
+  Shareholders Equity:                                   $208,000
+
+End of Year:
+  Cash:                                                   $28,000
+  Accounts Receivable:                                    $98,000
+  Equipment (net of depreciation):                       $167,000
+  Total Assets:                                          $293,000
+  Line of Credit:                                        $112,000
+  Accounts Payable:                                       $48,000
+  Shareholders Equity:                                   $133,000
+
+================================================================================
+SCHEDULE B - ADDITIONAL INFORMATION
+================================================================================
+Total receipts for year:                               $1,095,000
+Total assets at year end:                                $293,000
+Cash basis accounting: Yes
+Any change in ownership during year: No
+Any distributions made: No
+Line of credit drawn during year: $27,000
+
+================================================================================
+PREPARER INFORMATION
+================================================================================
+Prepared by: Desert Southwest Tax Services LLC
+PTIN: P07712340
+Date prepared: March 22, 2024
+================================================================================

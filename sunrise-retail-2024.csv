@@ -1,0 +1,21 @@
+category,subcategory,amount,prior_year_amount,notes
+Income,In-Store Sales,385000,412000,Walk-in retail customers
+Income,Online Sales,142000,68000,E-commerce platform
+Income,Wholesale,48000,55000,Bulk orders to local businesses
+Income,Total Revenue,575000,535000,
+COGS,Cost of Goods,298000,278000,Wholesale purchase cost
+COGS,Shipping & Fulfillment,22000,8500,Online order fulfillment
+COGS,Total COGS,320000,286500,
+Gross Profit,,255000,248500,
+Expenses,Rent - Store,48000,48000,Main retail location
+Expenses,Utilities,12000,11000,Store operations
+Expenses,Salaries - Staff,88000,82000,Sales floor and stockroom
+Expenses,Owner Compensation,72000,72000,Sole proprietor draw classified
+Expenses,Marketing,18000,14000,Social media print ads
+Expenses,Point of Sale & Tech,6800,4200,POS system e-commerce fees
+Expenses,Insurance,8400,8400,Store and inventory insurance
+Expenses,Shrinkage & Losses,9500,6200,Theft damaged goods
+Expenses,Accounting,4800,4800,Bookkeeper and CPA
+Expenses,Miscellaneous,11200,5600,Bags fixtures supplies
+Expenses,Total Expenses,278700,256200,
+Net Income,,-23700,-7700,

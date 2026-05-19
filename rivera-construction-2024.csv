@@ -1,0 +1,23 @@
+category,subcategory,amount,prior_year_amount,notes
+Income,Residential Projects,645000,520000,Home builds and renovations
+Income,Commercial Projects,312000,480000,Office retail construction
+Income,Subcontractor Revenue,88000,95000,Pass-through subcontracting
+Income,Total Revenue,1045000,1095000,
+COGS,Materials,312000,285000,Lumber concrete steel
+COGS,Subcontractor Costs,225000,268000,Electrical plumbing HVAC subs
+COGS,Labor - Field,198000,182000,Construction crew wages
+COGS,Equipment Rental,42000,38000,Heavy machinery rental
+COGS,Total COGS,777000,773000,
+Gross Profit,,268000,322000,
+Expenses,Rent - Office & Yard,28000,28000,Office and equipment storage
+Expenses,Utilities,8500,7800,Office and yard
+Expenses,Salaries - Admin,65000,62000,Project managers office staff
+Expenses,Officer Compensation,185000,185000,Rivera brothers salary
+Expenses,Vehicles & Fuel,38000,32000,Trucks and equipment fuel
+Expenses,Insurance,52000,48000,General liability workers comp
+Expenses,Permits & Licenses,12000,9500,Building permits city fees
+Expenses,Marketing,8000,4500,Website bids proposals
+Expenses,Accounting & Legal,10000,10000,CPA and contracts
+Expenses,Miscellaneous,22000,8800,Various job site expenses
+Expenses,Total Expenses,428500,395600,
+Net Income,,-160500,-73600,

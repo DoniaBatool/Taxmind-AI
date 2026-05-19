@@ -1,0 +1,21 @@
+category,subcategory,amount,prior_year_amount,notes
+Income,Product Sales,428500,380000,Bread and pastry retail sales
+Income,Catering Revenue,67000,52000,Corporate catering contracts
+Income,Online Orders,38200,18000,New delivery platform launched
+Income,Total Revenue,533700,450000,
+COGS,Ingredients,142000,118000,Flour wheat dairy eggs
+COGS,Packaging,18500,14200,Boxes bags labels
+COGS,Kitchen Labor,98000,88000,Bakers and kitchen staff
+COGS,Total COGS,258500,220400,
+Gross Profit,,275200,229600,
+Expenses,Rent,52000,52000,Main bakery location
+Expenses,Utilities,14800,11200,Gas electric water
+Expenses,Salaries - Admin,85000,72000,Manager and front staff
+Expenses,Marketing,22000,8500,Social media ads new campaigns
+Expenses,Equipment Maintenance,8200,3100,Oven repair refrigeration
+Expenses,Insurance,6400,6400,Business liability
+Expenses,Accounting & Legal,4800,4800,CPA and legal fees
+Expenses,Delivery & Logistics,11200,0,New delivery service started
+Expenses,Miscellaneous,28600,9800,Various unclassified
+Expenses,Total Expenses,233000,167800,
+Net Income,,42200,61800,

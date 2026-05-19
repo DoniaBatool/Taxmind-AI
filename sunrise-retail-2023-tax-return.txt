@@ -1,0 +1,98 @@
+================================================================================
+FORM 1040 - SCHEDULE C (SOLE PROPRIETORSHIP)
+U.S. Return of Sole Proprietor Business Income
+Tax Year: January 1, 2023 - December 31, 2023
+================================================================================
+
+TAXPAYER INFORMATION
+Name: Jennifer Park
+SSN: XXX-XX-7741
+Business Name: Sunrise Retail Store
+EIN: 91-XXXXXXX
+Principal Business: Retail General Merchandise
+Business Code: 452990
+Accounting Method: Cash
+Business Address: 3300 Commerce Street, Nashville, TN 37201
+
+================================================================================
+PART I - INCOME
+================================================================================
+Line 1  - Gross receipts or sales:                        $535,000
+Line 2  - Returns and allowances:                         ($12,400)
+Line 3  - Subtract Line 2 from Line 1:                   $522,600
+Line 4  - Cost of goods sold (Line 42):                  ($286,500)
+Line 5  - Gross profit:                                   $236,100
+Line 6  - Other income:                                        $0
+Line 7  - GROSS INCOME:                                   $236,100
+
+================================================================================
+PART II - EXPENSES
+================================================================================
+Line 8  - Advertising:                                    $14,000
+Line 9  - Car and truck expenses:                              $0
+Line 10 - Commissions and fees:                            $3,200
+Line 11 - Contract labor:                                  $4,800
+Line 13 - Depreciation:                                    $6,200
+Line 14 - Employee benefit programs:                       $5,400
+Line 15 - Insurance (other than health):                   $8,400
+Line 16 - Interest:                                            $0
+Line 17 - Legal and professional services:                 $4,800
+Line 18 - Office expense:                                  $1,800
+Line 20b - Rent or lease (other business property):       $48,000
+Line 21 - Repairs and maintenance:                         $2,600
+Line 22 - Supplies:                                        $3,200
+Line 23 - Taxes and licenses:                              $4,100
+Line 25 - Utilities:                                      $11,000
+Line 26 - Wages (less employment credits):                $82,000
+Line 27a - Other expenses (see Part V):                   $28,500
+Line 28 - TOTAL EXPENSES:                                $256,200
+Line 29 - Tentative profit:                               ($20,100)
+Line 30 - Home office deduction:                           $4,400
+Line 31 - NET PROFIT OR LOSS:                             ($24,500)
+
+NOTE: Reported net loss of $7,700 on prior return reflects
+adjustments made during audit review. Restated here as ($24,500)
+with corrected home office deduction methodology.
+
+================================================================================
+PART III - COST OF GOODS SOLD
+================================================================================
+Line 33 - Inventory at beginning of year:                 $68,000
+Line 36 - Cost of items purchased for resale:            $278,000
+Line 39 - Other costs (freight, handling):                $14,500
+Line 40 - Subtract closing inventory:                     ($74,000)
+Line 42 - COST OF GOODS SOLD:                            $286,500
+
+================================================================================
+PART V - OTHER EXPENSES DETAIL (Line 27a - $28,500)
+================================================================================
+Point of sale system and software fees:                    $4,200
+Shrinkage and damaged goods write-off:                     $6,200
+Bags, tissue, display fixtures:                            $3,600
+Merchant processing fees (credit cards):                   $8,200
+Miscellaneous operating:                                   $5,600
+Online platform seller fees:                               $0
+(Online sales minimal in 2023 - new channel launched 2024)
+
+================================================================================
+SELF-EMPLOYMENT TAX SUMMARY
+================================================================================
+Net loss — No SE tax owed
+Estimated tax payments made:                               $4,200
+Refund due:                                                $4,200
+
+================================================================================
+DEPRECIATION SCHEDULE (Form 4562)
+================================================================================
+POS System (acquired 2022):             Basis $8,400    Depr: $1,680
+Store fixtures (acquired 2020):         Basis $18,000   Depr: $2,520
+Display shelving (acquired 2021):       Basis $10,000   Depr: $2,000
+Total depreciation:                                        $6,200
+
+================================================================================
+PREPARER INFORMATION
+================================================================================
+Prepared by: Park & Associates CPA Group
+PTIN: P03321198
+Date prepared: April 2, 2024
+================================================================================

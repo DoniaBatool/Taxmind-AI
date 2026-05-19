@@ -1,0 +1,53 @@
+# ── Secrets (KABHI GITHUB PE UPLOAD MAT KARNA) ──────────
+.env
+.env.local
+.env.production
+*.key
+secrets/
+
+# ── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+venv/
+env/
+.venv/
+*.pyc
+
+# ── Uploaded Files ────────────────────────────────────────
+backend/uploads/
+
+# ── Node / React ──────────────────────────────────────────
+node_modules/
+frontend/build/
+frontend/dist/
+.npm
+*.log
+npm-debug.log*
+
+# ── Database ──────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── OS Files ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ───────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Logs ─────────────────────────────────────────────────
+logs/
+*.log

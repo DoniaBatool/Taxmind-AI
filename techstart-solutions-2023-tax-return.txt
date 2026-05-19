@@ -1,0 +1,95 @@
+================================================================================
+FORM 1065 - U.S. RETURN OF PARTNERSHIP INCOME
+Tax Year: January 1, 2023 - December 31, 2023
+================================================================================
+
+PARTNERSHIP INFORMATION
+Partnership Name: TechStart Solutions LLC
+EIN: 47-XXXXXXX
+Business Type: Software Development & IT Consulting
+Business Code: 541511
+Principal Business Address: 500 Innovation Drive, Suite 300, Austin, TX 78701
+Accounting Method: Accrual
+Number of Partners: 3
+Tax Year: Calendar Year
+
+PARTNERS:
+1. Marcus Chen       - 45% ownership - Managing Member
+2. Priya Nair        - 35% ownership - Technical Director
+3. David Okonkwo     - 20% ownership - Sales Director
+
+================================================================================
+FORM 1065 - INCOME (PAGE 1)
+================================================================================
+Line 1a - Gross receipts or sales:                        $537,000
+Line 2  - Cost of goods sold:                            ($232,500)
+Line 3  - Gross profit:                                   $304,500
+Line 4  - Ordinary income from partnerships:                   $0
+Line 5  - Net farm profit:                                     $0
+Line 6a - Net gain from Form 4797:                             $0
+Line 7  - Other income:                                        $0
+Line 8  - TOTAL INCOME:                                   $304,500
+
+================================================================================
+DEDUCTIONS
+================================================================================
+Line 9  - Salaries and wages (not partners):              $68,000
+Line 10 - Guaranteed payments to partners:               $185,000
+Line 11 - Repairs and maintenance:                         $2,200
+Line 12 - Bad debts:                                       $4,800
+Line 13 - Rent:                                           $36,000
+Line 14 - Taxes and licenses:                              $8,200
+Line 15 - Interest:                                            $0
+Line 16 - Depreciation:                                    $6,800
+Line 17 - Depletion:                                           $0
+Line 18 - Retirement plans:                               $24,000
+Line 19 - Employee benefit programs:                      $14,500
+Line 20 - Other deductions:                               $91,000
+Line 21 - TOTAL DEDUCTIONS:                              $225,000
+Line 22 - ORDINARY BUSINESS INCOME:                       $79,500
+
+================================================================================
+SCHEDULE K - PARTNERS' DISTRIBUTIVE SHARE ITEMS
+================================================================================
+Line 1  - Ordinary business income (loss):                $79,500
+Line 2  - Net rental real estate income:                       $0
+Line 12 - Section 179 deduction:                               $0
+Line 13c - Other deductions (home office):                     $0
+Line 18 - Tax-exempt income:                                   $0
+
+PARTNER K-1 ALLOCATIONS:
+Marcus Chen    (45%):  Ordinary income  $35,775
+Priya Nair     (35%):  Ordinary income  $27,825
+David Okonkwo  (20%):  Ordinary income  $15,900
+
+================================================================================
+OTHER DEDUCTIONS DETAIL (Line 20 - $91,000)
+================================================================================
+Cloud infrastructure (AWS/Azure):                         $31,000
+Software licenses and subscriptions:                      $16,500
+Marketing and advertising:                                $28,000
+Travel and entertainment:                                 $22,000
+Miscellaneous:                                             $6,800
+Less: Already captured above:                            ($13,300)
+NET OTHER DEDUCTIONS:                                     $91,000
+
+================================================================================
+BALANCE SHEET (Schedule L)
+================================================================================
+Beginning of Year:
+  Total Assets:                                          $142,000
+  Total Liabilities:                                      $38,000
+  Partners' Capital:                                     $104,000
+
+End of Year:
+  Total Assets:                                          $198,000
+  Total Liabilities:                                      $52,000
+  Partners' Capital:                                     $146,000
+
+================================================================================
+PREPARER INFORMATION
+================================================================================
+Prepared by: Anderson Tax Group LLC
+PTIN: P09876543
+Date prepared: March 28, 2024
+================================================================================
