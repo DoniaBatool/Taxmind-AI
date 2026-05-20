@@ -3,6 +3,7 @@ Chat Router — AI Q&A for a specific client (REST)
 """
 
 import json
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -14,6 +15,7 @@ from models import Client, Analysis, User
 from auth.dependencies import get_current_user
 from config import settings
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/clients", tags=["chat"])
 
 _openai = AsyncOpenAI(api_key=settings.openai_api_key)
@@ -110,11 +112,14 @@ Guidelines:
     messages.append({"role": "user", "content": payload.message})
 
     # ── Call OpenAI ───────────────────────────────────────────────────────────
-    response = await _openai.chat.completions.create(
-        model=settings.openai_model,
-        messages=messages,
-        max_tokens=700,
-        temperature=0.3,
-    )
-
-    return {"reply": response.choices[0].message.content}
+    try:
+        response = await _openai.chat.completions.create(
+            model=settings.openai_model,
+            messages=messages,
+            max_tokens=700,
+            temperature=0.3,
+        )
+        return {"reply": response.choices[0].message.content}
+    except Exception as e:
+        logger.error(f"OpenAI chat error for client {client_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"AI service error: {str(e)}")
