@@ -26,6 +26,10 @@ class Analysis(Base):
     tax_opportunities: Mapped[list | None] = mapped_column(JSON, nullable=True)   # tax-planner output
     smart_questions: Mapped[list | None] = mapped_column(JSON, nullable=True)     # follow-up questions
 
+    # Source documents used in this analysis run
+    # Format: { tax_return: {id, filename, tax_year}, financials: {id, filename, fiscal_year} }
+    document_refs: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
     # Dashboard fields
     priority_level: Mapped[str] = mapped_column(String(20), default="on-track")  # urgent | review | on-track
     one_line_summary: Mapped[str | None] = mapped_column(String(500), nullable=True)

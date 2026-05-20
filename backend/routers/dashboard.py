@@ -7,25 +7,33 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from database import get_db
-from models import Client, Analysis
+from models import Client, Analysis, User
+from auth.dependencies import get_current_user
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 
 @router.get("/briefing")
-async def morning_briefing(db: AsyncSession = Depends(get_db)):
+async def morning_briefing(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """
-    Morning briefing — priority-ranked saare clients
-    Red (urgent) pehle, phir Yellow (review), phir Green (on-track)
+    Morning briefing — this firm's clients ranked by priority.
+    Urgent (red) first, then Review (yellow), then On-Track (green).
     """
-    clients_result = await db.execute(select(Client).order_by(Client.updated_at.desc()))
+    # Admin sees ALL clients across all firms; regular user sees only their own
+    query = select(Client).order_by(Client.updated_at.desc())
+    if not current_user.is_admin:
+        query = query.where(Client.user_id == current_user.id)
+    clients_result = await db.execute(query)
     clients = clients_result.scalars().all()
 
     briefing = []
     priority_order = {"urgent": 0, "review": 1, "on-track": 2}
 
     for client in clients:
-        # Latest analysis fetch karo
+        # Fetch latest completed analysis
         analysis_result = await db.execute(
             select(Analysis)
             .where(Analysis.client_id == client.id, Analysis.status == "done")
@@ -48,7 +56,7 @@ async def morning_briefing(db: AsyncSession = Depends(get_db)):
             "has_analysis": latest_analysis is not None,
         })
 
-    # Priority ke hisaab se sort karo
+    # Sort by priority
     briefing.sort(key=lambda x: priority_order.get(x["priority_level"], 99))
 
     return {
@@ -61,11 +69,15 @@ async def morning_briefing(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/priority-list")
-async def priority_list(db: AsyncSession = Depends(get_db)):
-    """Sirf priority-ranked client list (lightweight)"""
-    result = await db.execute(
-        select(Client.id, Client.name, Client.entity_type, Client.priority_level, Client.one_line_summary)
-    )
+async def priority_list(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Priority-ranked client list (lightweight)"""
+    pq = select(Client.id, Client.name, Client.entity_type, Client.priority_level, Client.one_line_summary)
+    if not current_user.is_admin:
+        pq = pq.where(Client.user_id == current_user.id)
+    result = await db.execute(pq)
     clients = result.all()
 
     priority_order = {"urgent": 0, "review": 1, "on-track": 2}

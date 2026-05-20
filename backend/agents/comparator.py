@@ -5,7 +5,7 @@ Prior-year tax JSON + current-year CSV → YoY comparison table
 
 import json
 import logging
-from agents.gemini_client import call_gemini_sync
+from agents.openai_client import call_openai_sync as call_gemini_sync
 from parsers.csv_parser import csv_to_text
 
 logger = logging.getLogger(__name__)

@@ -4,7 +4,7 @@ Client model — CA firm ke har client ka record
 
 import uuid
 from datetime import datetime
-from sqlalchemy import String, DateTime, func
+from sqlalchemy import String, DateTime, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base
 
@@ -14,6 +14,10 @@ class Client(Base):
 
     id: Mapped[str] = mapped_column(
         String, primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    # Owner — which firm/user this client belongs to (nullable for migration safety)
+    user_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     entity_type: Mapped[str] = mapped_column(
@@ -34,6 +38,7 @@ class Client(Base):
     )
 
     # Relationships
+    owner: Mapped["User | None"] = relationship(back_populates="clients")
     tax_returns: Mapped[list["TaxReturn"]] = relationship(
         back_populates="client", cascade="all, delete-orphan"
     )

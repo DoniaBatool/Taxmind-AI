@@ -17,12 +17,12 @@ router = APIRouter(tags=["chat"])
 @router.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     """
-    Real-time chat WebSocket endpoint
-    Frontend se message aata hai → orchestrator agent ko jaata hai → streaming response wapas
+    Real-time chat WebSocket endpoint.
+    Receives messages from the frontend → routes to orchestrator → streams response back.
     """
     await websocket.accept()
 
-    # New chat session create karo
+    # Create a new chat session
     async with AsyncSessionLocal() as db:
         session = ChatSession()
         db.add(session)
@@ -34,7 +34,7 @@ async def websocket_chat(websocket: WebSocket):
 
     try:
         while True:
-            # User ka message receive karo
+            # Receive user message
             data = await websocket.receive_text()
             payload = json.loads(data)
             user_message = payload.get("message", "")
@@ -43,7 +43,7 @@ async def websocket_chat(websocket: WebSocket):
             if not user_message.strip():
                 continue
 
-            # User message DB mein save karo
+            # Save user message to DB
             async with AsyncSessionLocal() as db:
                 msg = ChatMessage(
                     session_id=session_id,
@@ -53,17 +53,17 @@ async def websocket_chat(websocket: WebSocket):
                 db.add(msg)
                 await db.commit()
 
-            # Typing indicator bhejo
+            # Send typing indicator
             await websocket.send_json({"type": "typing", "agent": "orchestrator"})
 
-            # Orchestrator agent se response lo
+            # Get response from orchestrator
             response = await chat_with_orchestrator(
                 user_message=user_message,
                 client_id=client_id,
                 session_id=session_id,
             )
 
-            # Response stream karo
+            # Stream response to client
             await websocket.send_json({
                 "type": "message",
                 "role": "assistant",
@@ -72,7 +72,7 @@ async def websocket_chat(websocket: WebSocket):
                 "metadata": response.get("metadata", {}),
             })
 
-            # Assistant message DB mein save karo
+            # Save assistant message to DB
             async with AsyncSessionLocal() as db:
                 ai_msg = ChatMessage(
                     session_id=session_id,
@@ -89,7 +89,7 @@ async def websocket_chat(websocket: WebSocket):
 
 @router.get("/api/chat/{session_id}/history")
 async def get_chat_history(session_id: str, db: AsyncSession = Depends(get_db)):
-    """Chat history fetch karo"""
+    """Fetch chat history for a session"""
     result = await db.execute(
         select(ChatMessage)
         .where(ChatMessage.session_id == session_id)

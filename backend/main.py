@@ -11,8 +11,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from database import create_tables
-from routers import clients, documents, analysis, dashboard, chat
+from database import create_tables, AsyncSessionLocal
+from routers import clients, documents, analysis, dashboard, chat, auth, admin
 
 # Logging setup
 logging.basicConfig(
@@ -24,6 +24,28 @@ logger = logging.getLogger(__name__)
 
 # ── Startup / Shutdown ────────────────────────────────────────────────────────
 
+async def _run_migrations():
+    """Add any new columns that don't exist yet (safe, idempotent)."""
+    from sqlalchemy import text
+    async with AsyncSessionLocal() as db:
+        migrations = [
+            ("analyses",  "document_refs JSON"),
+            ("clients",   "user_id VARCHAR"),
+            ("users",     "is_admin BOOLEAN DEFAULT false"),
+        ]
+        for table, col_def in migrations:
+            col_name = col_def.split()[0]
+            try:
+                await db.execute(text(
+                    f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col_def}"
+                ))
+                await db.commit()
+                logger.info(f"Migration: {table}.{col_name} ready ✓")
+            except Exception as e:
+                await db.rollback()
+                logger.warning(f"Migration {table}.{col_name} skipped: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """App startup aur shutdown logic"""
@@ -31,8 +53,9 @@ async def lifespan(app: FastAPI):
     logger.info("TaxMind AI starting up...")
     os.makedirs(settings.upload_dir, exist_ok=True)
     await create_tables()
+    await _run_migrations()
     logger.info("Database tables ready ✓")
-    logger.info(f"Gemini model: {settings.gemini_model} ✓")
+    logger.info(f"OpenAI model: {settings.openai_model} ✓")
     logger.info("TaxMind AI is ready! 🧠⚡")
 
     yield  # App yahan run karta hai
@@ -61,6 +84,8 @@ app.add_middleware(
 
 # ── Routes Include karo ───────────────────────────────────────────────────────
 
+app.include_router(auth.router)
+app.include_router(admin.router)
 app.include_router(clients.router)
 app.include_router(documents.router)
 app.include_router(analysis.router)
@@ -76,7 +101,7 @@ async def root():
         "name": "TaxMind AI",
         "version": "1.0.0",
         "status": "running",
-        "gemini_model": settings.gemini_model,
+        "openai_model": settings.openai_model,
     }
 
 

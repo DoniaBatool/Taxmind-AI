@@ -5,7 +5,7 @@ YoY comparison → prioritized red flags with severity classification
 
 import json
 import logging
-from agents.gemini_client import call_gemini_sync
+from agents.openai_client import call_openai_sync as call_gemini_sync
 
 logger = logging.getLogger(__name__)
 

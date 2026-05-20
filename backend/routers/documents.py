@@ -1,12 +1,13 @@
 """
-Documents Router — PDF tax return + CSV P&L upload
+Documents Router — PDF tax return + CSV P&L upload, list, delete
 """
 
 import os
 import aiofiles
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 from database import get_db
 from models import Client, TaxReturn, Financials
@@ -21,7 +22,7 @@ ALLOWED_CSV = {"text/csv", "application/csv", "text/plain"}
 
 
 async def save_upload(file: UploadFile, folder: str) -> str:
-    """File ko disk pe save karo, path return karo"""
+    """Save uploaded file to disk, return file path"""
     os.makedirs(folder, exist_ok=True)
     file_path = os.path.join(folder, file.filename)
     async with aiofiles.open(file_path, "wb") as f:
@@ -39,21 +40,21 @@ async def upload_tax_return(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ):
-    """Prior-year PDF tax return upload karo"""
-    # Client check
+    """Upload prior-year PDF tax return"""
+    # Verify client exists
     result = await db.execute(select(Client).where(Client.id == client_id))
     client = result.scalar_one_or_none()
     if not client:
-        raise HTTPException(status_code=404, detail="Client nahi mila")
+        raise HTTPException(status_code=404, detail="Client not found")
 
-    # Save file
+    # Save file to disk
     folder = os.path.join(settings.upload_dir, client_id, "tax-returns")
     file_path = await save_upload(file, folder)
 
-    # Text extract karo
+    # Extract text from PDF
     raw_text = extract_text_from_pdf(file_path)
 
-    # DB mein save karo
+    # Save to database
     tax_return = TaxReturn(
         client_id=client_id,
         tax_year=tax_year,
@@ -67,7 +68,7 @@ async def upload_tax_return(
 
     return {
         "id": tax_return.id,
-        "message": f"{tax_year} ka tax return upload ho gaya",
+        "message": f"Tax return for {tax_year} uploaded successfully",
         "text_length": len(raw_text) if raw_text else 0,
     }
 
@@ -81,21 +82,21 @@ async def upload_financials(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ):
-    """Current-year CSV P&L statement upload karo"""
-    # Client check
+    """Upload current-year CSV P&L statement"""
+    # Verify client exists
     result = await db.execute(select(Client).where(Client.id == client_id))
     client = result.scalar_one_or_none()
     if not client:
-        raise HTTPException(status_code=404, detail="Client nahi mila")
+        raise HTTPException(status_code=404, detail="Client not found")
 
-    # Save file
+    # Save file to disk
     folder = os.path.join(settings.upload_dir, client_id, "financials")
     file_path = await save_upload(file, folder)
 
-    # CSV parse karo
+    # Parse CSV data
     parsed_data = parse_pl_csv(file_path)
 
-    # DB mein save karo
+    # Save to database
     financials = Financials(
         client_id=client_id,
         fiscal_year=fiscal_year,
@@ -108,6 +109,131 @@ async def upload_financials(
 
     return {
         "id": financials.id,
-        "message": f"{fiscal_year} ki P&L upload ho gayi",
+        "message": f"P&L statement for {fiscal_year} uploaded successfully",
         "rows": len(parsed_data) if parsed_data else 0,
     }
+
+
+# ── List Documents ────────────────────────────────────────────────────────────
+
+@router.get("/{client_id}/documents")
+async def list_documents(client_id: str, db: AsyncSession = Depends(get_db)):
+    """List all uploaded documents for a client"""
+    result = await db.execute(select(Client).where(Client.id == client_id))
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Client not found")
+
+    tax_res = await db.execute(
+        select(TaxReturn).where(TaxReturn.client_id == client_id).order_by(TaxReturn.created_at.desc())
+    )
+    fin_res = await db.execute(
+        select(Financials).where(Financials.client_id == client_id).order_by(Financials.created_at.desc())
+    )
+
+    tax_returns = tax_res.scalars().all()
+    financials  = fin_res.scalars().all()
+
+    return {
+        "tax_returns": [
+            {
+                "id": t.id,
+                "tax_year": t.tax_year,
+                "filename": os.path.basename(t.raw_file_path) if t.raw_file_path else "unknown",
+                "extraction_status": t.extraction_status,
+                "text_length": len(t.raw_text) if t.raw_text else 0,
+                "uploaded_at": t.created_at,
+            }
+            for t in tax_returns
+        ],
+        "financials": [
+            {
+                "id": f.id,
+                "fiscal_year": f.fiscal_year,
+                "filename": os.path.basename(f.raw_file_path) if f.raw_file_path else "unknown",
+                "rows": len(f.parsed_data) if f.parsed_data else 0,
+                "uploaded_at": f.created_at,
+            }
+            for f in financials
+        ],
+    }
+
+
+# ── View Documents ────────────────────────────────────────────────────────────
+
+@router.get("/{client_id}/tax-return/{doc_id}/view")
+async def view_tax_return(client_id: str, doc_id: str, db: AsyncSession = Depends(get_db)):
+    """Serve the raw tax return file for inline viewing"""
+    result = await db.execute(
+        select(TaxReturn).where(TaxReturn.id == doc_id, TaxReturn.client_id == client_id)
+    )
+    doc = result.scalar_one_or_none()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    if not doc.raw_file_path or not os.path.exists(doc.raw_file_path):
+        raise HTTPException(status_code=404, detail="File not found on disk")
+
+    filename = os.path.basename(doc.raw_file_path)
+    ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+    media_type = "application/pdf" if ext == "pdf" else "text/plain; charset=utf-8"
+    return FileResponse(doc.raw_file_path, media_type=media_type, filename=filename)
+
+
+@router.get("/{client_id}/financials/{doc_id}/view")
+async def view_financials(client_id: str, doc_id: str, db: AsyncSession = Depends(get_db)):
+    """Serve the raw CSV file for inline viewing"""
+    result = await db.execute(
+        select(Financials).where(Financials.id == doc_id, Financials.client_id == client_id)
+    )
+    doc = result.scalar_one_or_none()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    if not doc.raw_file_path or not os.path.exists(doc.raw_file_path):
+        raise HTTPException(status_code=404, detail="File not found on disk")
+
+    filename = os.path.basename(doc.raw_file_path)
+    return FileResponse(doc.raw_file_path, media_type="text/csv; charset=utf-8", filename=filename)
+
+
+# ── Delete Documents ──────────────────────────────────────────────────────────
+
+@router.delete("/{client_id}/tax-return/{doc_id}")
+async def delete_tax_return(client_id: str, doc_id: str, db: AsyncSession = Depends(get_db)):
+    """Delete a tax return document"""
+    result = await db.execute(
+        select(TaxReturn).where(TaxReturn.id == doc_id, TaxReturn.client_id == client_id)
+    )
+    doc = result.scalar_one_or_none()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # Delete file from disk if it exists
+    if doc.raw_file_path and os.path.exists(doc.raw_file_path):
+        try:
+            os.remove(doc.raw_file_path)
+        except OSError:
+            pass
+
+    await db.delete(doc)
+    await db.commit()
+    return {"message": "Tax return deleted successfully"}
+
+
+@router.delete("/{client_id}/financials/{doc_id}")
+async def delete_financials(client_id: str, doc_id: str, db: AsyncSession = Depends(get_db)):
+    """Delete a financials / P&L document"""
+    result = await db.execute(
+        select(Financials).where(Financials.id == doc_id, Financials.client_id == client_id)
+    )
+    doc = result.scalar_one_or_none()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    if doc.raw_file_path and os.path.exists(doc.raw_file_path):
+        try:
+            os.remove(doc.raw_file_path)
+        except OSError:
+            pass
+
+    await db.delete(doc)
+    await db.commit()
+    return {"message": "P&L document deleted successfully"}

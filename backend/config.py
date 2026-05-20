@@ -1,30 +1,37 @@
 """
 TaxMind AI — Configuration
-Gemini API + Neon DB settings
 """
 
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from pathlib import Path
+import os
+
+ENV_FILE = Path(__file__).parent / ".env"
 
 
 class Settings(BaseSettings):
-    # Gemini
-    gemini_api_key: str = ""
-    gemini_model: str = "gemini-1.5-pro"
+    # OpenAI
+    openai_api_key: str = ""
+    openai_model: str = "gpt-4o-mini"
 
     # Database (Neon DB)
     database_url: str = ""
 
     # App
     app_env: str = "development"
-    app_secret_key: str = "dev-secret-key"
+    app_secret_key: str = "dev-secret-key-change-in-production"
     upload_dir: str = "./uploads"
 
-    # CORS
-    allowed_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    # CORS — comma-separated origins, e.g. "https://taxmind.onrender.com,http://localhost:3000"
+    cors_origins: str = "http://localhost:3000,http://localhost:5173"
+
+    @property
+    def allowed_origins(self) -> list[str]:
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
     class Config:
-        env_file = ".env"
+        env_file = str(ENV_FILE)
         env_file_encoding = "utf-8"
 
 

@@ -1,7 +1,8 @@
 """
 Main Orchestrator Agent
-- Full analysis pipeline chalata hai (background task)
-- Chat queries ko appropriate sub-agent pe route karta hai
+- Runs the full multi-agent analysis pipeline (background task)
+- Routes chat queries to the appropriate sub-agent
+- Broadcasts real-time progress updates via WebSocket
 """
 
 import logging
@@ -10,12 +11,13 @@ from sqlalchemy import select
 
 from database import AsyncSessionLocal
 from models import Client, TaxReturn, Financials, Analysis, Report
-from agents.gemini_client import call_gemini_sync
+from agents.openai_client import call_openai_sync as call_openai
 from agents.pdf_analyzer import analyze_pdf_tax_return
 from agents.comparator import compare_financials
 from agents.anomaly_detector import detect_anomalies
 from agents.tax_planner import find_tax_opportunities, generate_smart_questions
 from agents.report_generator import generate_client_report
+from agents.progress import init_analysis, push_step
 from parsers.csv_parser import csv_to_text, get_summary_from_parsed
 
 logger = logging.getLogger(__name__)
@@ -26,27 +28,29 @@ logger = logging.getLogger(__name__)
 async def run_full_analysis(client_id: str, analysis_id: str, analysis_year: int):
     """
     Complete multi-agent analysis pipeline:
-    1. pdf_analyzer → prior year tax data
-    2. comparator → YoY comparison
-    3. anomaly_detector → red flags
-    4. tax_planner → opportunities + smart questions
-    5. report_generator → client report
-    6. DB update → dashboard refresh
+    1. pdf_analyzer      → extract prior-year tax data
+    2. comparator        → YoY comparison
+    3. anomaly_detector  → red flags
+    4. tax_planner       → opportunities + smart questions
+    5. report_generator  → client report
+    6. DB update         → dashboard refresh
 
-    Background task mein chalta hai
+    Runs as a background task.
     """
     logger.info(f"Starting full analysis for client {client_id}, year {analysis_year}")
+    init_analysis(analysis_id)
 
     async with AsyncSessionLocal() as db:
         try:
-            # Client fetch karo
+            # Fetch client
             client_result = await db.execute(select(Client).where(Client.id == client_id))
             client = client_result.scalar_one_or_none()
             if not client:
-                logger.error(f"Client {client_id} nahi mila")
+                logger.error(f"Client {client_id} not found")
+                push_step(analysis_id, "orchestrator", "error", "Client not found")
                 return
 
-            # Prior year tax return fetch karo
+            # Fetch prior-year tax return
             prior_year = analysis_year - 1
             tax_result = await db.execute(
                 select(TaxReturn)
@@ -55,7 +59,7 @@ async def run_full_analysis(client_id: str, analysis_id: str, analysis_year: int
             )
             tax_return = tax_result.scalar_one_or_none()
 
-            # Current year CSV fetch karo
+            # Fetch current-year CSV financials
             fin_result = await db.execute(
                 select(Financials)
                 .where(Financials.client_id == client_id, Financials.fiscal_year == analysis_year)
@@ -65,7 +69,7 @@ async def run_full_analysis(client_id: str, analysis_id: str, analysis_year: int
 
             if not tax_return or not financials:
                 logger.error(f"Documents missing for client {client_id}")
-                # Analysis update karo error state mein
+                push_step(analysis_id, "orchestrator", "error", "Documents missing — upload tax return and P&L first")
                 analysis_result = await db.execute(select(Analysis).where(Analysis.id == analysis_id))
                 analysis = analysis_result.scalar_one_or_none()
                 if analysis:
@@ -75,17 +79,18 @@ async def run_full_analysis(client_id: str, analysis_id: str, analysis_year: int
                 return
 
             # ── Step 1: PDF Analyzer ──────────────────────────────────────
+            push_step(analysis_id, "pdf_analyzer", "running")
             logger.info("Step 1: PDF Analyzer running...")
             prior_year_data = analyze_pdf_tax_return(
                 tax_text=tax_return.raw_text or "",
                 entity_type=client.entity_type,
             )
-
-            # PDF parsed data save karo
             tax_return.parsed_data = prior_year_data
             await db.flush()
+            push_step(analysis_id, "pdf_analyzer", "done", "Prior-year tax data extracted")
 
             # ── Step 2: Financial Comparator ──────────────────────────────
+            push_step(analysis_id, "comparator", "running")
             logger.info("Step 2: Financial Comparator running...")
             current_csv_data = financials.parsed_data or []
             comparison_data = compare_financials(
@@ -93,8 +98,10 @@ async def run_full_analysis(client_id: str, analysis_id: str, analysis_year: int
                 current_year_csv_data=current_csv_data,
                 analysis_year=analysis_year,
             )
+            push_step(analysis_id, "comparator", "done", f"YoY comparison complete — health: {comparison_data.get('overall_health', 'N/A')}")
 
             # ── Step 3: Anomaly Detector ──────────────────────────────────
+            push_step(analysis_id, "anomaly_detector", "running")
             logger.info("Step 3: Anomaly Detector running...")
             anomaly_result = detect_anomalies(
                 comparison_data=comparison_data,
@@ -103,8 +110,10 @@ async def run_full_analysis(client_id: str, analysis_id: str, analysis_year: int
             red_flags = anomaly_result.get("red_flags", [])
             priority_level = anomaly_result.get("priority_level", "on-track")
             one_line_summary = anomaly_result.get("one_line_summary", "")
+            push_step(analysis_id, "anomaly_detector", "done", f"{len(red_flags)} flag(s) found — priority: {priority_level}")
 
             # ── Step 4: Tax Planner ───────────────────────────────────────
+            push_step(analysis_id, "tax_planner", "running")
             logger.info("Step 4: Tax Planner running...")
             financial_summary = csv_to_text(current_csv_data)
             tax_opportunities = find_tax_opportunities(
@@ -112,15 +121,15 @@ async def run_full_analysis(client_id: str, analysis_id: str, analysis_year: int
                 entity_type=client.entity_type,
                 tax_year=analysis_year,
             )
-
-            # Smart questions generate karo
             smart_questions = generate_smart_questions(
                 red_flags=red_flags,
                 entity_type=client.entity_type,
                 tax_opportunities=tax_opportunities,
             )
+            push_step(analysis_id, "tax_planner", "done", f"{len(tax_opportunities)} opportunity(s) identified")
 
             # ── Step 5: Report Generator ──────────────────────────────────
+            push_step(analysis_id, "report_generator", "running")
             logger.info("Step 5: Report Generator running...")
             report_markdown = generate_client_report(
                 client_name=client.name,
@@ -131,8 +140,9 @@ async def run_full_analysis(client_id: str, analysis_id: str, analysis_year: int
                 tax_opportunities=tax_opportunities,
                 smart_questions=smart_questions,
             )
+            push_step(analysis_id, "report_generator", "done", "Client report generated")
 
-            # ── Step 6: DB Update ─────────────────────────────────────────
+            # ── Step 6: Save to DB ────────────────────────────────────────
             logger.info("Step 6: Saving results to DB...")
             analysis_result = await db.execute(select(Analysis).where(Analysis.id == analysis_id))
             analysis = analysis_result.scalar_one_or_none()
@@ -145,12 +155,26 @@ async def run_full_analysis(client_id: str, analysis_id: str, analysis_year: int
                 analysis.one_line_summary = one_line_summary
                 analysis.status = "done"
                 analysis.completed_at = datetime.utcnow()
+                # Record exactly which documents were used in this run
+                import os as _os
+                analysis.document_refs = {
+                    "tax_return": {
+                        "id": tax_return.id,
+                        "filename": _os.path.basename(tax_return.raw_file_path or "") or "unknown",
+                        "tax_year": tax_return.tax_year,
+                    },
+                    "financials": {
+                        "id": financials.id,
+                        "filename": _os.path.basename(financials.raw_file_path or "") or "unknown",
+                        "fiscal_year": financials.fiscal_year,
+                    },
+                }
 
-            # Client priority update karo
+            # Update client priority
             client.priority_level = priority_level
             client.one_line_summary = one_line_summary
 
-            # Report save karo
+            # Save report
             report = Report(
                 client_id=client_id,
                 analysis_id=analysis_id,
@@ -159,10 +183,12 @@ async def run_full_analysis(client_id: str, analysis_id: str, analysis_year: int
             db.add(report)
             await db.commit()
 
+            push_step(analysis_id, "orchestrator", "done", f"Analysis complete — {one_line_summary}")
             logger.info(f"Full analysis complete for {client.name} — Priority: {priority_level}")
 
         except Exception as e:
             logger.error(f"Analysis pipeline error: {e}")
+            push_step(analysis_id, "orchestrator", "error", f"Analysis failed: {str(e)[:200]}")
             async with AsyncSessionLocal() as error_db:
                 analysis_result = await error_db.execute(
                     select(Analysis).where(Analysis.id == analysis_id)
@@ -208,12 +234,11 @@ async def chat_with_orchestrator(
     session_id: str | None = None,
 ) -> dict:
     """
-    User chat message ko handle karo — appropriate agent ko route karo.
+    Handle user chat messages — route to the appropriate agent.
 
     Returns:
         Dict with content, agent_used, metadata
     """
-    # Context build karo agar client specified hai
     context = "No specific client selected."
     agent_used = "orchestrator"
 
@@ -224,7 +249,7 @@ async def chat_with_orchestrator(
             if client:
                 context = f"Client: {client.name} | Entity: {client.entity_type} | Priority: {client.priority_level}"
 
-                # Latest analysis bhi load karo
+                # Load latest analysis context
                 analysis_result = await db.execute(
                     select(Analysis)
                     .where(Analysis.client_id == client_id, Analysis.status == "done")
@@ -232,13 +257,12 @@ async def chat_with_orchestrator(
                 )
                 latest = analysis_result.scalar_one_or_none()
                 if latest:
-                    import json
                     context += f"\n\nLatest Analysis Summary: {latest.one_line_summary}"
                     context += f"\nRed Flags ({len(latest.red_flags or [])}): "
                     if latest.red_flags:
                         context += ", ".join(f["title"] for f in (latest.red_flags or [])[:3])
 
-    # Intent detect karo
+    # Detect intent to route to the right agent
     message_lower = user_message.lower()
     if any(kw in message_lower for kw in ["red flag", "anomaly", "issue", "problem", "risk"]):
         agent_used = "anomaly-detector"
@@ -249,11 +273,10 @@ async def chat_with_orchestrator(
     elif any(kw in message_lower for kw in ["report", "generate", "write", "summary"]):
         agent_used = "report-generator"
 
-    # Gemini se response lo
     prompt = CHAT_SYSTEM_PROMPT.format(context=context) + f"\n\nUser: {user_message}\n\nAssistant:"
 
     try:
-        response = call_gemini_sync(prompt, temperature=0.4)
+        response = call_openai(prompt, temperature=0.4)
         return {
             "content": response,
             "agent_used": agent_used,
@@ -262,7 +285,7 @@ async def chat_with_orchestrator(
     except Exception as e:
         logger.error(f"Chat orchestrator error: {e}")
         return {
-            "content": "Mujhe abhi response generate karne mein masla aaya. Dobara try karein.",
+            "content": "Unable to generate a response right now. Please try again.",
             "agent_used": "orchestrator",
             "metadata": {"error": str(e)},
         }

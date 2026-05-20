@@ -9,11 +9,13 @@ from config import settings
 
 
 # Async engine for Neon DB
+# SSL alag se pass karo — Neon DB ke liye zaroori hai
 engine = create_async_engine(
     settings.database_url,
     echo=settings.app_env == "development",
     pool_size=5,
     max_overflow=10,
+    connect_args={"ssl": "require"},
 )
 
 # Session factory
