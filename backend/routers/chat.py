@@ -64,31 +64,32 @@ CLIENT ON FILE:
 """
 
     if analysis:
-        if analysis.overview:
-            ov = analysis.overview
-            ctx += f"""
-FINANCIAL OVERVIEW:
-  Revenue (current)  : {ov.get('revenue_current', 'N/A')}
-  Revenue (prior)    : {ov.get('revenue_prior', 'N/A')}
-  Net Income         : {ov.get('net_income', 'N/A')}
-  Effective Tax Rate : {ov.get('effective_tax_rate', 'N/A')}
-  YoY Growth         : {ov.get('yoy_growth', 'N/A')}
-"""
+        ctx += f"\n  Priority: {analysis.priority_level}\n  Summary: {analysis.one_line_summary or 'N/A'}\n"
+
+        if analysis.comparison_data:
+            cd = analysis.comparison_data
+            ctx += "\nFINANCIAL COMPARISON (Year-over-Year):\n"
+            for key, val in cd.items():
+                if isinstance(val, dict):
+                    ctx += f"  {key}: prior={val.get('prior','N/A')}, current={val.get('current','N/A')}\n"
 
         if analysis.red_flags:
             ctx += "\nRED FLAGS:\n"
             for f in analysis.red_flags:
-                ctx += f"  [{f.get('severity','').upper()}] {f.get('issue','')}: {f.get('explanation','')}\n"
+                severity = f.get('severity', f.get('level', 'unknown')).upper()
+                issue = f.get('issue', f.get('title', ''))
+                explanation = f.get('explanation', f.get('description', ''))
+                ctx += f"  [{severity}] {issue}: {explanation}\n"
 
-        if analysis.tax_plan:
-            strategies = analysis.tax_plan.get("strategies", [])
-            ctx += "\nTAX PLANNING STRATEGIES:\n"
-            for s in strategies:
-                ctx += f"  • {s.get('title','')}: {s.get('description','')} — Est. savings: {s.get('estimated_savings','')}\n"
+        if analysis.tax_opportunities:
+            ctx += "\nTAX OPPORTUNITIES:\n"
+            for t in analysis.tax_opportunities:
+                savings = t.get('estimated_savings', 0)
+                ctx += f"  • {t.get('opportunity', t.get('title',''))}: {t.get('description','')} — Est. savings: ${savings:,}\n"
 
-        if analysis.questions_for_client:
-            ctx += "\nOUTSTANDING QUESTIONS FOR CLIENT:\n"
-            for q in analysis.questions_for_client:
+        if analysis.smart_questions:
+            ctx += "\nSMART QUESTIONS FOR CLIENT MEETING:\n"
+            for q in analysis.smart_questions:
                 ctx += f"  • {q}\n"
     else:
         ctx += "\nNote: No analysis has been completed yet. Advise the user to upload documents and run AI analysis.\n"
