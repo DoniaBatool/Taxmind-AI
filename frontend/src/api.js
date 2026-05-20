@@ -75,5 +75,9 @@ export const adminGetFirmClients = (userId)             => api.get(`/api/admin/f
 export const adminSetRole        = (userId, is_admin)   => api.patch(`/api/admin/firms/${userId}/admin`, { is_admin });
 export const adminDeleteFirm     = (userId)             => api.delete(`/api/admin/firms/${userId}`);
 
+// ── Chat ──────────────────────────────────────────────────────────────────────
+export const chatWithClient = (clientId, message, history) =>
+  api.post(`/api/clients/${clientId}/chat`, { message, history });
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 export const getDashboardBriefing = () => api.get("/api/dashboard/briefing");

@@ -1,109 +1,120 @@
 """
-Chat Router — WebSocket real-time chat with AI orchestrator
+Chat Router — AI Q&A for a specific client (REST)
 """
 
 import json
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from pydantic import BaseModel
+from openai import AsyncOpenAI
 
-from database import get_db, AsyncSessionLocal
-from models import ChatSession, ChatMessage
-from agents.orchestrator import chat_with_orchestrator
+from database import get_db
+from models import Client, Analysis, User
+from auth.dependencies import get_current_user
+from config import settings
 
-router = APIRouter(tags=["chat"])
+router = APIRouter(prefix="/api/clients", tags=["chat"])
 
-
-@router.websocket("/ws/chat")
-async def websocket_chat(websocket: WebSocket):
-    """
-    Real-time chat WebSocket endpoint.
-    Receives messages from the frontend → routes to orchestrator → streams response back.
-    """
-    await websocket.accept()
-
-    # Create a new chat session
-    async with AsyncSessionLocal() as db:
-        session = ChatSession()
-        db.add(session)
-        await db.commit()
-        await db.refresh(session)
-        session_id = session.id
-
-    await websocket.send_json({"type": "session", "session_id": session_id})
-
-    try:
-        while True:
-            # Receive user message
-            data = await websocket.receive_text()
-            payload = json.loads(data)
-            user_message = payload.get("message", "")
-            client_id = payload.get("client_id")  # optional context
-
-            if not user_message.strip():
-                continue
-
-            # Save user message to DB
-            async with AsyncSessionLocal() as db:
-                msg = ChatMessage(
-                    session_id=session_id,
-                    role="user",
-                    content=user_message,
-                )
-                db.add(msg)
-                await db.commit()
-
-            # Send typing indicator
-            await websocket.send_json({"type": "typing", "agent": "orchestrator"})
-
-            # Get response from orchestrator
-            response = await chat_with_orchestrator(
-                user_message=user_message,
-                client_id=client_id,
-                session_id=session_id,
-            )
-
-            # Stream response to client
-            await websocket.send_json({
-                "type": "message",
-                "role": "assistant",
-                "agent": response.get("agent_used", "orchestrator"),
-                "content": response.get("content", ""),
-                "metadata": response.get("metadata", {}),
-            })
-
-            # Save assistant message to DB
-            async with AsyncSessionLocal() as db:
-                ai_msg = ChatMessage(
-                    session_id=session_id,
-                    role="assistant",
-                    agent_name=response.get("agent_used", "orchestrator"),
-                    content=response.get("content", ""),
-                )
-                db.add(ai_msg)
-                await db.commit()
-
-    except WebSocketDisconnect:
-        pass
+_openai = AsyncOpenAI(api_key=settings.openai_api_key)
 
 
-@router.get("/api/chat/{session_id}/history")
-async def get_chat_history(session_id: str, db: AsyncSession = Depends(get_db)):
-    """Fetch chat history for a session"""
-    result = await db.execute(
-        select(ChatMessage)
-        .where(ChatMessage.session_id == session_id)
-        .order_by(ChatMessage.created_at)
+class ChatRequest(BaseModel):
+    message: str
+    history: list[dict] = []   # [{role, content}] — last N turns
+
+
+@router.post("/{client_id}/chat")
+async def chat_with_client(
+    client_id: str,
+    payload: ChatRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """AI Q&A about a specific client's tax situation"""
+
+    # ── Get client (admin can access any) ────────────────────────────────────
+    query = select(Client).where(Client.id == client_id)
+    if not current_user.is_admin:
+        query = query.where(Client.user_id == current_user.id)
+    result = await db.execute(query)
+    client = result.scalar_one_or_none()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+
+    # ── Get latest completed analysis ─────────────────────────────────────────
+    ar = await db.execute(
+        select(Analysis)
+        .where(Analysis.client_id == client_id, Analysis.status == "done")
+        .order_by(Analysis.created_at.desc())
     )
-    messages = result.scalars().all()
+    analysis = ar.scalar_one_or_none()
 
-    return [
-        {
-            "id": m.id,
-            "role": m.role,
-            "agent_name": m.agent_name,
-            "content": m.content,
-            "created_at": m.created_at,
-        }
-        for m in messages
-    ]
+    # ── Build system prompt ───────────────────────────────────────────────────
+    ctx = f"""You are TaxMind AI, a professional tax and accounting assistant helping a CA firm.
+
+CLIENT ON FILE:
+  Name        : {client.name}
+  Entity Type : {client.entity_type}
+  Industry    : {client.industry or 'Not specified'}
+  Priority    : {client.priority_level}
+  Summary     : {client.one_line_summary or 'No summary yet — analysis may not have run.'}
+"""
+
+    if analysis:
+        if analysis.overview:
+            ov = analysis.overview
+            ctx += f"""
+FINANCIAL OVERVIEW:
+  Revenue (current)  : {ov.get('revenue_current', 'N/A')}
+  Revenue (prior)    : {ov.get('revenue_prior', 'N/A')}
+  Net Income         : {ov.get('net_income', 'N/A')}
+  Effective Tax Rate : {ov.get('effective_tax_rate', 'N/A')}
+  YoY Growth         : {ov.get('yoy_growth', 'N/A')}
+"""
+
+        if analysis.red_flags:
+            ctx += "\nRED FLAGS:\n"
+            for f in analysis.red_flags:
+                ctx += f"  [{f.get('severity','').upper()}] {f.get('issue','')}: {f.get('explanation','')}\n"
+
+        if analysis.tax_plan:
+            strategies = analysis.tax_plan.get("strategies", [])
+            ctx += "\nTAX PLANNING STRATEGIES:\n"
+            for s in strategies:
+                ctx += f"  • {s.get('title','')}: {s.get('description','')} — Est. savings: {s.get('estimated_savings','')}\n"
+
+        if analysis.questions_for_client:
+            ctx += "\nOUTSTANDING QUESTIONS FOR CLIENT:\n"
+            for q in analysis.questions_for_client:
+                ctx += f"  • {q}\n"
+    else:
+        ctx += "\nNote: No analysis has been completed yet. Advise the user to upload documents and run AI analysis.\n"
+
+    ctx += """
+Guidelines:
+- Be concise, professional, and specific.
+- Use numbers from the analysis data when relevant.
+- If asked about something not in the data, say so clearly.
+- Respond in the same language the user writes in.
+"""
+
+    # ── Build message list ────────────────────────────────────────────────────
+    messages = [{"role": "system", "content": ctx}]
+
+    # Include last 10 turns of history to stay within token limits
+    for msg in payload.history[-10:]:
+        if msg.get("role") in ("user", "assistant") and msg.get("content"):
+            messages.append({"role": msg["role"], "content": msg["content"]})
+
+    messages.append({"role": "user", "content": payload.message})
+
+    # ── Call OpenAI ───────────────────────────────────────────────────────────
+    response = await _openai.chat.completions.create(
+        model=settings.openai_model,
+        messages=messages,
+        max_tokens=700,
+        temperature=0.3,
+    )
+
+    return {"reply": response.choices[0].message.content}

@@ -6,7 +6,7 @@ import {
   uploadTaxReturn, uploadFinancials,
   listDocuments, deleteTaxReturn, deleteFinancials,
   listAnalyses, deleteAnalysis,
-  updateClient,
+  updateClient, chatWithClient,
 } from "../api";
 
 const SEV_COLOR    = { high: "#ef4444", medium: "#f59e0b", low: "#10b981" };
@@ -584,7 +584,12 @@ export default function ClientDetail() {
   const [loading, setLoading]         = useState(true);
   const [notFound, setNotFound]       = useState(false);
   const [showEdit, setShowEdit]       = useState(false);
+  const [showChat, setShowChat]       = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput]     = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
   const [analyzing, setAnalyzing]     = useState(false);
+  const chatEndRef = useRef(null);
   const [uploadStatus, setUploadStatus] = useState({ pdf: null, csv: null, msg: "" });
   const [progressSteps, setProgressSteps] = useState([]);
   const [showProgress, setShowProgress]   = useState(false);
@@ -619,10 +624,34 @@ export default function ClientDetail() {
   useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => () => wsRef.current?.close(), []);
 
+  // Scroll chat to bottom whenever messages change
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMessages]);
+
+  const handleSendMessage = async (e) => {
+    e?.preventDefault();
+    const msg = chatInput.trim();
+    if (!msg || chatLoading) return;
+    const userMsg = { role: "user", content: msg };
+    const updatedHistory = [...chatMessages, userMsg];
+    setChatMessages(updatedHistory);
+    setChatInput("");
+    setChatLoading(true);
+    try {
+      const res = await chatWithClient(id, msg, chatMessages);
+      setChatMessages(prev => [...prev, { role: "assistant", content: res.data.reply }]);
+    } catch {
+      setChatMessages(prev => [...prev, { role: "assistant", content: "Sorry, I couldn't connect to the AI. Please try again." }]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
   const connectProgressWS = (analysisId) => {
     // Small delay so WS is established before first agent step fires
     setTimeout(() => {
-      const ws = new WebSocket(`ws://localhost:8000/api/clients/${id}/analyze/${analysisId}/progress`);
+      const wsBase = (process.env.REACT_APP_API_URL || "http://localhost:8000")
+        .replace("https://", "wss://").replace("http://", "ws://");
+      const ws = new WebSocket(`${wsBase}/api/clients/${id}/analyze/${analysisId}/progress`);
       wsRef.current = ws;
       ws.onmessage = (e) => {
         const step = JSON.parse(e.data);
@@ -808,6 +837,16 @@ export default function ClientDetail() {
                 ⬇️ Download Report
               </button>
             )}
+            <button
+              onClick={() => setShowChat(v => !v)}
+              style={{
+                padding: "9px 18px", borderRadius: 9, fontSize: 12, fontWeight: 700,
+                background: showChat ? "rgba(139,92,246,0.25)" : "rgba(139,92,246,0.12)",
+                color: "#8b5cf6", border: "1px solid rgba(139,92,246,0.35)", cursor: "pointer",
+              }}
+            >
+              💬 Ask AI
+            </button>
           </div>
         </div>
 
@@ -945,6 +984,147 @@ export default function ClientDetail() {
           />
         </div>
       </div>
+
+      {/* ── AI Chat Panel ── */}
+      {showChat && (
+        <div style={{
+          position: "fixed", bottom: 24, right: 24, zIndex: 500,
+          width: 380, height: 520,
+          background: "#13151c",
+          border: "1px solid rgba(139,92,246,0.35)",
+          borderRadius: 18,
+          boxShadow: "0 24px 64px rgba(0,0,0,0.6)",
+          display: "flex", flexDirection: "column",
+          overflow: "hidden",
+        }}>
+          {/* Header */}
+          <div style={{
+            padding: "14px 18px",
+            background: "rgba(139,92,246,0.1)",
+            borderBottom: "1px solid rgba(139,92,246,0.2)",
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: "50%",
+                background: "rgba(139,92,246,0.2)", border: "1px solid rgba(139,92,246,0.4)",
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16,
+              }}>🧠</div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#e8eaf0" }}>TaxMind AI</div>
+                <div style={{ fontSize: 11, color: "#8b5cf6" }}>Ask about {client?.name}</div>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowChat(false)}
+              style={{ background: "none", border: "none", color: "#6b7280", fontSize: 18, cursor: "pointer", lineHeight: 1 }}
+            >✕</button>
+          </div>
+
+          {/* Messages */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+            {chatMessages.length === 0 && (
+              <div style={{ textAlign: "center", padding: "30px 16px" }}>
+                <div style={{ fontSize: 32, marginBottom: 10 }}>💬</div>
+                <p style={{ color: "#6b7280", fontSize: 13, lineHeight: 1.5 }}>
+                  Ask me anything about <strong style={{ color: "#9ca3af" }}>{client?.name}</strong> — red flags, tax strategies, financial ratios, or meeting prep questions.
+                </p>
+                {/* Suggestions */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 16 }}>
+                  {[
+                    "What are the biggest red flags?",
+                    "How can we reduce their tax liability?",
+                    "What questions should I ask the client?",
+                  ].map(s => (
+                    <button
+                      key={s}
+                      onClick={() => { setChatInput(s); }}
+                      style={{
+                        padding: "8px 12px", borderRadius: 8, fontSize: 12,
+                        background: "rgba(139,92,246,0.08)", color: "#8b5cf6",
+                        border: "1px solid rgba(139,92,246,0.2)", cursor: "pointer",
+                        textAlign: "left",
+                      }}
+                    >{s}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {chatMessages.map((msg, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
+                <div style={{
+                  maxWidth: "82%",
+                  padding: "10px 14px",
+                  borderRadius: msg.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+                  background: msg.role === "user"
+                    ? "rgba(139,92,246,0.2)"
+                    : "rgba(255,255,255,0.06)",
+                  border: msg.role === "user"
+                    ? "1px solid rgba(139,92,246,0.3)"
+                    : "1px solid rgba(255,255,255,0.08)",
+                  fontSize: 13, color: "#e8eaf0", lineHeight: 1.55,
+                  whiteSpace: "pre-wrap",
+                }}>
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+
+            {chatLoading && (
+              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div style={{
+                  padding: "10px 16px", borderRadius: "14px 14px 14px 4px",
+                  background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)",
+                  display: "flex", alignItems: "center", gap: 6,
+                }}>
+                  {[0,1,2].map(d => (
+                    <div key={d} style={{
+                      width: 7, height: 7, borderRadius: "50%", background: "#8b5cf6",
+                      animation: "bounce 1.2s infinite",
+                      animationDelay: `${d * 0.2}s`,
+                    }} />
+                  ))}
+                  <style>{`@keyframes bounce { 0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)} }`}</style>
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Input */}
+          <form
+            onSubmit={handleSendMessage}
+            style={{
+              padding: "12px 14px",
+              borderTop: "1px solid rgba(255,255,255,0.07)",
+              display: "flex", gap: 8,
+            }}
+          >
+            <input
+              value={chatInput}
+              onChange={e => setChatInput(e.target.value)}
+              placeholder="Ask about this client..."
+              disabled={chatLoading}
+              style={{
+                flex: 1, padding: "9px 14px", borderRadius: 10, fontSize: 13,
+                background: "rgba(255,255,255,0.06)", color: "#e8eaf0",
+                border: "1px solid rgba(255,255,255,0.1)", outline: "none",
+              }}
+            />
+            <button
+              type="submit"
+              disabled={!chatInput.trim() || chatLoading}
+              style={{
+                padding: "9px 14px", borderRadius: 10, fontSize: 14, fontWeight: 700,
+                background: chatInput.trim() && !chatLoading ? "rgba(139,92,246,0.3)" : "rgba(139,92,246,0.08)",
+                color: chatInput.trim() && !chatLoading ? "#8b5cf6" : "#4b5563",
+                border: "1px solid rgba(139,92,246,0.3)", cursor: chatInput.trim() && !chatLoading ? "pointer" : "not-allowed",
+              }}
+            >↑</button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
