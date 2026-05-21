@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../api";
 
@@ -17,15 +17,22 @@ const EyeOff = () => (
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [form, setForm]       = useState({ email: "", password: "" });
-  const [error, setError]     = useState("");
-  const [loading, setLoading] = useState(false);
-  const [showPw, setShowPw]   = useState(false);
+  const [form, setForm]         = useState({ email: "", password: "" });
+  const [error, setError]       = useState("");
+  const [loading, setLoading]   = useState(false);
+  const [showPw, setShowPw]     = useState(false);
+  const [slowMsg, setSlowMsg]   = useState("");
+  const timerRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setError(""); setSlowMsg("");
     setLoading(true);
+
+    // After 5s show "waking up" message, after 20s show longer wait message
+    timerRef.current = setTimeout(() => setSlowMsg("Waking up server… this takes ~30s on free hosting."), 5000);
+    const timer2 = setTimeout(() => setSlowMsg("Almost there — server is starting up, please wait…"), 20000);
+
     try {
       const res = await login({ email: form.email, password: form.password });
       const { access_token, firm_name, email, user_id, is_admin } = res.data;
@@ -39,7 +46,10 @@ export default function LoginPage() {
         setError(err.response?.data?.detail || "Invalid email or password.");
       }
     } finally {
+      clearTimeout(timerRef.current);
+      clearTimeout(timer2);
       setLoading(false);
+      setSlowMsg("");
     }
   };
 
@@ -157,8 +167,23 @@ export default function LoginPage() {
             )}
 
             <button type="submit" disabled={loading} style={btnSt(loading)}>
-              {loading ? "Signing in..." : "Sign In →"}
+              {loading ? "Signing in…" : "Sign In →"}
             </button>
+
+            {slowMsg && (
+              <div style={{
+                display: "flex", alignItems: "center", gap: 8,
+                padding: "10px 14px", borderRadius: 8, fontSize: 13,
+                background: "#EFF6FF", border: "1px solid #BFDBFE", color: "#1E40AF",
+              }}>
+                <div style={{
+                  width: 14, height: 14, borderRadius: "50%", flexShrink: 0,
+                  border: "2px solid #BFDBFE", borderTopColor: "#1a56db",
+                  animation: "spin 0.8s linear infinite",
+                }} />
+                {slowMsg}
+              </div>
+            )}
           </form>
         </div>
       </div>
