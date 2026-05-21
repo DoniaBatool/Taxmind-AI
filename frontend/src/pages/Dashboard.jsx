@@ -46,7 +46,7 @@ function Spinner({ label = "Loading..." }) {
   return (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "60vh", flexDirection: "column", gap: 12 }}>
       <div style={{ width: 36, height: 36, border: "3px solid #E2E8F0", borderTopColor: "#1a56db", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-      <p style={{ color: "#64748B", fontSize: 14 }}>{label}</p>
+      <p style={{ color: "#475569", fontSize: 14, fontWeight: 500 }}>{label}</p>
     </div>
   );
 }
@@ -63,7 +63,7 @@ function StatCard({ label, value, color, icon }) {
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <span style={{ fontSize: 16 }}>{icon}</span>
-        <span style={{ fontSize: 12, fontWeight: 500, color: "#64748B" }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: "#475569", letterSpacing: "0.02em" }}>{label}</span>
       </div>
       <div style={{ fontSize: 28, fontWeight: 800, color: color, lineHeight: 1 }}>{value}</div>
     </div>
@@ -218,14 +218,14 @@ function AdminDashboard() {
                         }}>ADMIN</span>
                       )}
                     </div>
-                    <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 1 }}>
+                    <div style={{ fontSize: 11, color: "#64748B", fontWeight: 500, marginTop: 1 }}>
                       Joined {firm.created_at ? new Date(firm.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "—"}
                     </div>
                   </div>
                 </div>
 
                 {/* Email */}
-                <div style={{ fontSize: 13, color: "#64748B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 16 }}>
+                <div style={{ fontSize: 13, color: "#334155", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingRight: 16 }}>
                   {firm.email}
                 </div>
 
@@ -266,7 +266,7 @@ function AdminDashboard() {
           </div>
         ) : (
           <>
-            <p style={{ color: "#64748B", fontSize: 13, marginBottom: 18 }}>
+            <p style={{ color: "#334155", fontSize: 13, fontWeight: 500, marginBottom: 18 }}>
               {firmClients.length} client{firmClients.length !== 1 ? "s" : ""}
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(310px, 1fr))", gap: 14 }}>
@@ -313,7 +313,7 @@ function FirmDashboard() {
     <div style={{ maxWidth: 480, margin: "80px auto", textAlign: "center", padding: 32 }}>
       <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
       <h2 style={{ color: "#DC2626", marginBottom: 8 }}>Could Not Connect</h2>
-      <p style={{ color: "#64748B", marginBottom: 24 }}>Make sure the backend server is running.</p>
+      <p style={{ color: "#475569", marginBottom: 24 }}>Make sure the backend server is running.</p>
       <button onClick={() => window.location.reload()} style={{
         padding: "10px 24px", background: "#1a56db", color: "#fff",
         border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 600,
@@ -331,7 +331,7 @@ function FirmDashboard() {
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>
             Good {getGreeting()}, {user.firm_name?.split(" ")[0] || "there"}
           </h1>
-          <p style={{ color: "#64748B", fontSize: 14 }}>
+          <p style={{ color: "#475569", fontSize: 14, fontWeight: 500 }}>
             {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
           </p>
         </div>
@@ -362,7 +362,7 @@ function FirmDashboard() {
         }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>🏢</div>
           <h2 style={{ color: "#0F172A", marginBottom: 8, fontSize: 20, fontWeight: 700 }}>No Clients Yet</h2>
-          <p style={{ color: "#64748B", marginBottom: 24, fontSize: 14 }}>Add your first client to start AI-powered tax analysis</p>
+          <p style={{ color: "#475569", marginBottom: 24, fontSize: 14 }}>Add your first client to start AI-powered tax analysis</p>
           <button
             onClick={() => navigate("/add-client")}
             style={{

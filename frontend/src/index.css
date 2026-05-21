@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 /* ── Design Tokens ─────────────────────────────────────────────────────────── */
 :root {
@@ -20,11 +20,11 @@
   --border:      #E2E8F0;
   --border-dark: #CBD5E1;
 
-  /* Typography */
-  --text:        #0F172A;
-  --text-body:   #334155;
-  --text-muted:  #64748B;
-  --text-faint:  #94A3B8;
+  /* Typography — all dark for maximum legibility */
+  --text:        #0A0F1E;   /* near-black headlines */
+  --text-body:   #1E293B;   /* body text — dark slate */
+  --text-muted:  #475569;   /* secondary labels */
+  --text-faint:  #64748B;   /* timestamps, hints */
 
   /* Status */
   --urgent:      #DC2626;
@@ -38,10 +38,10 @@
   --success-border: #A7F3D0;
 
   /* Shadows */
-  --shadow-sm:   0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md:   0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
-  --shadow-lg:   0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
-  --shadow-xl:   0 20px 25px -5px rgba(0,0,0,0.08), 0 10px 10px -5px rgba(0,0,0,0.03);
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:   0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.05);
+  --shadow-lg:   0 10px 15px -3px rgba(0,0,0,0.09), 0 4px 6px -2px rgba(0,0,0,0.05);
+  --shadow-xl:   0 20px 25px -5px rgba(0,0,0,0.10), 0 10px 10px -5px rgba(0,0,0,0.04);
 
   /* Radius */
   --radius-sm:   6px;
@@ -56,12 +56,33 @@
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg);
-  color: var(--text);
+  color: var(--text-body);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* ── Headings — always dark ─────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+/* ── Paragraphs ─────────────────────────────────────────────────────────────── */
+p { color: var(--text-body); }
+
+/* ── Strong & bold always near-black ───────────────────────────────────────── */
+strong, b { color: var(--text); font-weight: 700; }
+
+/* ── Inputs inherit font ────────────────────────────────────────────────────── */
+input, select, textarea, button {
+  font-family: inherit;
 }
 
 /* ── Scrollbar ─────────────────────────────────────────────────────────────── */
@@ -70,6 +91,7 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
 
-/* ── Spinner animation ─────────────────────────────────────────────────────── */
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+/* ── Animations ─────────────────────────────────────────────────────────────── */
+@keyframes spin    { to { transform: rotate(360deg); } }
+@keyframes fadeIn  { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }

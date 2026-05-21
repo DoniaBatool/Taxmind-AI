@@ -29,11 +29,11 @@ function ConfirmDialog({ title = "Delete Client", message, confirmLabel = "Delet
           marginBottom: 14, fontSize: 20,
         }}>⚠️</div>
         <h3 style={{ color: "#0F172A", fontSize: 16, fontWeight: 700, marginBottom: 8 }}>{title}</h3>
-        <p style={{ color: "#64748B", fontSize: 14, lineHeight: 1.6, marginBottom: 22 }}>{message}</p>
+        <p style={{ color: "#334155", fontSize: 14, lineHeight: 1.6, marginBottom: 22 }}>{message}</p>
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
           <button onClick={onCancel} style={{
             padding: "8px 18px", borderRadius: 7, fontSize: 13, fontWeight: 600,
-            background: "#F8FAFC", color: "#64748B",
+            background: "#F8FAFC", color: "#475569",
             border: "1px solid #E2E8F0", cursor: "pointer",
           }}>Cancel</button>
           <button onClick={onConfirm} style={{
@@ -121,8 +121,8 @@ export default function ClientCard({ client, onDeleted }) {
             <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
               {/* Entity badge */}
               <span style={{
-                fontSize: 10, fontWeight: 600, letterSpacing: "0.04em",
-                color: "#64748B", textTransform: "uppercase",
+                fontSize: 10, fontWeight: 700, letterSpacing: "0.05em",
+                color: "#475569", textTransform: "uppercase",
                 background: "#F1F5F9", border: "1px solid #E2E8F0",
                 padding: "2px 7px", borderRadius: 4,
                 display: "inline-block", marginBottom: 6,
@@ -188,7 +188,7 @@ export default function ClientCard({ client, onDeleted }) {
 
           {/* Summary */}
           <p style={{
-            fontSize: 13, color: "#64748B", lineHeight: 1.55,
+            fontSize: 13, color: "#334155", lineHeight: 1.6,
             marginBottom: 14, minHeight: 38,
             display: "-webkit-box", WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical", overflow: "hidden",
@@ -202,7 +202,7 @@ export default function ClientCard({ client, onDeleted }) {
             paddingTop: 12, borderTop: "1px solid #F1F5F9",
           }}>
             <span style={{
-              fontSize: 12, color: "#94A3B8",
+              fontSize: 12, color: "#475569", fontWeight: 500,
               display: "flex", alignItems: "center", gap: 4,
             }}>
               <span style={{ fontSize: 13 }}>🏭</span>
