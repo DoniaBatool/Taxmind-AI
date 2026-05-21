@@ -16,6 +16,7 @@ const API_BASE     = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line no-unused-vars
 function fmtDate(iso) {
   if (!iso) return "—";
   const d = new Date(iso);

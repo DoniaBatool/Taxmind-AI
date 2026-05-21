@@ -80,7 +80,6 @@ function AdminDashboard() {
   const [loadingClients, setLoadingClients] = useState(false);
   const [confirmFirm, setConfirmFirm]   = useState(null);
   const [refreshFirms, setRefreshFirms] = useState(0);
-  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
