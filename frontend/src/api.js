@@ -4,7 +4,7 @@ import axios from "axios";
 
 const BASE = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
-const api = axios.create({ baseURL: BASE });
+const api = axios.create({ baseURL: BASE, timeout: 90000 }); // 90s — allows for Render cold start
 
 // ── Token interceptor — attach Bearer token to every request ──────────────────
 api.interceptors.request.use((config) => {

@@ -86,7 +86,7 @@ export default function SignupPage() {
         </div>
 
         <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>
-          © 2025 TaxMind AI — Secure & Encrypted
+          © 2026 TaxMind AI — Secure & Encrypted
         </p>
       </div>
 
