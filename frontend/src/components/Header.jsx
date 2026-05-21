@@ -2,13 +2,12 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export default function Header() {
   const location = useLocation();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
-  // Hide header on login/signup pages
   if (["/login", "/signup"].includes(location.pathname)) return null;
 
-  const userRaw  = localStorage.getItem("taxmind_user");
-  const user     = userRaw ? JSON.parse(userRaw) : null;
+  const userRaw = localStorage.getItem("taxmind_user");
+  const user    = userRaw ? JSON.parse(userRaw) : null;
 
   const handleLogout = () => {
     localStorage.removeItem("taxmind_token");
@@ -16,71 +15,92 @@ export default function Header() {
     navigate("/login");
   };
 
+  const navLink = (to, label) => {
+    const active = location.pathname === to;
+    return (
+      <Link to={to} style={{
+        padding: "6px 14px", borderRadius: 6, fontSize: 13, fontWeight: 500,
+        textDecoration: "none", transition: "all 0.15s",
+        background: active ? "rgba(255,255,255,0.15)" : "transparent",
+        color: active ? "#FFFFFF" : "rgba(255,255,255,0.7)",
+        border: active ? "1px solid rgba(255,255,255,0.2)" : "1px solid transparent",
+      }}
+        onMouseEnter={e => { if (!active) { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "rgba(255,255,255,0.08)"; } }}
+        onMouseLeave={e => { if (!active) { e.currentTarget.style.color = "rgba(255,255,255,0.7)"; e.currentTarget.style.background = "transparent"; } }}
+      >{label}</Link>
+    );
+  };
+
   return (
     <header style={{
       position: "sticky", top: 0, zIndex: 100,
-      background: "rgba(10,12,16,0.85)",
-      backdropFilter: "blur(20px)",
-      borderBottom: "1px solid rgba(255,255,255,0.07)",
-      padding: "0 32px", height: 64,
+      background: "#0F2744",
+      borderBottom: "1px solid rgba(255,255,255,0.08)",
+      padding: "0 24px", height: 60,
       display: "flex", alignItems: "center", justifyContent: "space-between",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
     }}>
       {/* Logo */}
-      <Link to="/" style={{ textDecoration: "none" }}>
-        <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 22, color: "#e8eaf0", letterSpacing: "-0.5px" }}>
-          Tax<span style={{ color: "#14b8a6" }}>Mind</span> <span style={{ color: "#8b5cf6" }}>AI</span>
+      <Link to="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
+        {/* Icon mark */}
+        <div style={{
+          width: 32, height: 32, borderRadius: 8,
+          background: "linear-gradient(135deg, #1a56db, #0891b2)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 16, fontWeight: 800, color: "white",
+          boxShadow: "0 2px 8px rgba(26,86,219,0.4)",
+        }}>T</div>
+        <span style={{ fontSize: 17, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.3px" }}>
+          TaxMind <span style={{ color: "#60A5FA", fontWeight: 400 }}>AI</span>
         </span>
       </Link>
 
-      {/* Nav */}
-      <nav style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <Link to="/" style={{
-          padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-          textDecoration: "none",
-          background: location.pathname === "/" ? "rgba(20,184,166,0.15)" : "transparent",
-          color: location.pathname === "/" ? "#14b8a6" : "#6b7280",
-          border: location.pathname === "/" ? "1px solid rgba(20,184,166,0.3)" : "1px solid transparent",
-          transition: "all 0.2s",
-        }}>Dashboard</Link>
+      {/* Nav + User */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        {navLink("/", "Dashboard")}
 
         <Link to="/add-client" style={{
-          padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-          textDecoration: "none",
-          background: "rgba(20,184,166,0.1)", color: "#14b8a6",
-          border: "1px solid rgba(20,184,166,0.3)",
-        }}>+ Add Client</Link>
+          padding: "6px 14px", borderRadius: 6, fontSize: 13, fontWeight: 600,
+          textDecoration: "none", transition: "all 0.15s",
+          background: "#1a56db", color: "#fff",
+          border: "1px solid rgba(255,255,255,0.15)",
+        }}>+ New Client</Link>
 
-        {user?.is_admin && (
-          <Link to="/admin" style={{
-            padding: "6px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-            textDecoration: "none",
-            background: location.pathname === "/admin" ? "rgba(139,92,246,0.15)" : "rgba(139,92,246,0.08)",
-            color: "#8b5cf6",
-            border: "1px solid rgba(139,92,246,0.3)",
-          }}>⚙ Admin</Link>
-        )}
+        {user?.is_admin && navLink("/admin", "⚙ Admin")}
 
-        {/* Firm name + Logout */}
+        {/* Divider */}
+        <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.15)", margin: "0 8px" }} />
+
+        {/* User info */}
         {user && (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: 8, paddingLeft: 12, borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#e8eaf0" }}>{user.firm_name}</div>
-              <div style={{ fontSize: 10, color: "#6b7280" }}>{user.email}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Avatar */}
+            <div style={{
+              width: 32, height: 32, borderRadius: "50%",
+              background: "#1a56db", border: "2px solid rgba(255,255,255,0.2)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 13, fontWeight: 700, color: "white", flexShrink: 0,
+            }}>
+              {(user.firm_name || "?")[0].toUpperCase()}
+            </div>
+            <div style={{ lineHeight: 1.3 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{user.firm_name}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>{user.email}</div>
             </div>
             <button
               onClick={handleLogout}
-              title="Sign out"
               style={{
-                padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
-                background: "rgba(239,68,68,0.1)", color: "#ef4444",
-                border: "1px solid rgba(239,68,68,0.25)", cursor: "pointer",
+                padding: "5px 12px", borderRadius: 6, fontSize: 12, fontWeight: 600,
+                background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)",
+                border: "1px solid rgba(255,255,255,0.15)", cursor: "pointer",
+                transition: "all 0.15s", marginLeft: 4,
               }}
-            >
-              Sign Out
-            </button>
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.2)"; e.currentTarget.style.color = "#FCA5A5"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "rgba(255,255,255,0.7)"; }}
+            >Sign Out</button>
           </div>
         )}
-      </nav>
+      </div>
     </header>
   );
 }

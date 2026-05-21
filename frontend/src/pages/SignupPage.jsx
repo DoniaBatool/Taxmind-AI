@@ -4,8 +4,7 @@ import { register } from "../api";
 
 const EyeOpen = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-    <circle cx="12" cy="12" r="3"/>
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
   </svg>
 );
 const EyeOff = () => (
@@ -27,8 +26,8 @@ export default function SignupPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (form.password !== form.confirm) return setError("Passwords do not match");
-    if (form.password.length < 6) return setError("Password must be at least 6 characters");
+    if (form.password !== form.confirm) return setError("Passwords do not match.");
+    if (form.password.length < 6) return setError("Password must be at least 6 characters.");
     setLoading(true);
     try {
       const res = await register({ firm_name: form.firm_name, email: form.email, password: form.password });
@@ -38,9 +37,9 @@ export default function SignupPage() {
       navigate("/");
     } catch (err) {
       if (!err.response) {
-        setError("Cannot connect to server. Make sure the backend is running on port 8000.");
+        setError("Cannot connect to server. Please try again.");
       } else {
-        setError(err.response?.data?.detail || `Server error (${err.response?.status}). Check backend terminal.`);
+        setError(err.response?.data?.detail || "Registration failed. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -49,97 +48,161 @@ export default function SignupPage() {
 
   return (
     <div style={{
-      minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-      background: "var(--bg)", padding: "24px",
+      minHeight: "100vh", display: "flex",
+      background: "#F1F5F9",
     }}>
+      {/* Left panel */}
       <div style={{
-        width: "100%", maxWidth: 440,
-        background: "var(--surface)", border: "1px solid rgba(255,255,255,0.07)",
-        borderRadius: 20, padding: "40px 36px",
-        boxShadow: "0 24px 60px rgba(0,0,0,0.4)",
+        width: 380, flexShrink: 0,
+        background: "#0F2744",
+        display: "flex", flexDirection: "column", justifyContent: "space-between",
+        padding: "48px 40px",
       }}>
-        {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: 28, letterSpacing: "-0.5px", marginBottom: 6 }}>
-            <span style={{ color: "#e8eaf0" }}>Tax</span><span style={{ color: "#14b8a6" }}>Mind</span> <span style={{ color: "#8b5cf6" }}>AI</span>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 64 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 9,
+              background: "linear-gradient(135deg, #1a56db, #0891b2)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 18, fontWeight: 800, color: "white",
+            }}>T</div>
+            <span style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.3px" }}>
+              TaxMind <span style={{ color: "#60A5FA", fontWeight: 400 }}>AI</span>
+            </span>
           </div>
-          <div style={{ fontSize: 13, color: "#6b7280" }}>Create your firm account — free to start</div>
+          <h2 style={{ fontSize: 26, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 14 }}>
+            Start your free account
+          </h2>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.7 }}>
+            Set up your firm in minutes. No credit card required.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>Firm / Practice Name</label>
-            <input type="text" required value={form.firm_name}
-              onChange={e => setForm(f => ({ ...f, firm_name: e.target.value }))}
-              placeholder="e.g. Ahmed & Associates" style={inputStyle} />
+        <div style={{ padding: "20px", borderRadius: 12, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.7, fontStyle: "italic" }}>
+            "TaxMind helped us identify ₹3.2L in missed deductions across our client portfolio in the first week."
+          </p>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 10 }}>— CA Partner, Mumbai</p>
+        </div>
+
+        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>
+          © 2025 TaxMind AI — Secure & Encrypted
+        </p>
+      </div>
+
+      {/* Right panel — form */}
+      <div style={{
+        flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "48px 40px", overflowY: "auto",
+      }}>
+        <div style={{ width: "100%", maxWidth: 420 }}>
+          <div style={{ marginBottom: 32 }}>
+            <h1 style={{ fontSize: 24, fontWeight: 700, color: "#0F172A", marginBottom: 6 }}>
+              Create your firm account
+            </h1>
+            <p style={{ fontSize: 14, color: "#64748B" }}>
+              Already have an account?{" "}
+              <Link to="/login" style={{ color: "#1a56db", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
+            </p>
           </div>
 
-          <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>Email Address</label>
-            <input type="email" required value={form.email}
-              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-              placeholder="you@yourfirm.com" style={inputStyle} />
-          </div>
-
-          <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>Password</label>
-            <div style={{ position: "relative" }}>
-              <input type={showPw ? "text" : "password"} required value={form.password}
-                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                placeholder="At least 6 characters" style={{ ...inputStyle, paddingRight: 42 }} />
-              <button type="button" onClick={() => setShowPw(v => !v)} tabIndex={-1} style={eyeBtnStyle}>
-                {showPw ? <EyeOff /> : <EyeOpen />}
-              </button>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div>
+              <label style={labelSt}>Firm / Practice Name</label>
+              <input type="text" required value={form.firm_name}
+                onChange={e => setForm(f => ({ ...f, firm_name: e.target.value }))}
+                placeholder="e.g. Ahmed & Associates"
+                style={inputSt}
+                onFocus={e => e.target.style.borderColor = "#1a56db"}
+                onBlur={e => e.target.style.borderColor = "#CBD5E1"}
+              />
             </div>
-          </div>
 
-          <div style={{ marginBottom: 24 }}>
-            <label style={labelStyle}>Confirm Password</label>
-            <div style={{ position: "relative" }}>
-              <input type={showCf ? "text" : "password"} required value={form.confirm}
-                onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))}
-                placeholder="Re-enter password" style={{ ...inputStyle, paddingRight: 42 }} />
-              <button type="button" onClick={() => setShowCf(v => !v)} tabIndex={-1} style={eyeBtnStyle}>
-                {showCf ? <EyeOff /> : <EyeOpen />}
-              </button>
+            <div>
+              <label style={labelSt}>Email Address</label>
+              <input type="email" required value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                placeholder="you@yourfirm.com"
+                style={inputSt}
+                onFocus={e => e.target.style.borderColor = "#1a56db"}
+                onBlur={e => e.target.style.borderColor = "#CBD5E1"}
+              />
             </div>
-          </div>
 
-          {error && (
-            <div style={{ marginBottom: 16, padding: "10px 14px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 8, fontSize: 13, color: "#ef4444" }}>
-              {error}
+            <div>
+              <label style={labelSt}>Password</label>
+              <div style={{ position: "relative" }}>
+                <input type={showPw ? "text" : "password"} required value={form.password}
+                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                  placeholder="At least 6 characters"
+                  style={{ ...inputSt, paddingRight: 42 }}
+                  onFocus={e => e.target.style.borderColor = "#1a56db"}
+                  onBlur={e => e.target.style.borderColor = "#CBD5E1"}
+                />
+                <button type="button" onClick={() => setShowPw(v => !v)} tabIndex={-1} style={eyeBtnSt}>
+                  {showPw ? <EyeOff /> : <EyeOpen />}
+                </button>
+              </div>
             </div>
-          )}
 
-          <button type="submit" disabled={loading} style={btnStyle(loading)}>
-            {loading ? "Creating account..." : "Create Account →"}
-          </button>
-        </form>
+            <div>
+              <label style={labelSt}>Confirm Password</label>
+              <div style={{ position: "relative" }}>
+                <input type={showCf ? "text" : "password"} required value={form.confirm}
+                  onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))}
+                  placeholder="Re-enter password"
+                  style={{ ...inputSt, paddingRight: 42 }}
+                  onFocus={e => e.target.style.borderColor = "#1a56db"}
+                  onBlur={e => e.target.style.borderColor = "#CBD5E1"}
+                />
+                <button type="button" onClick={() => setShowCf(v => !v)} tabIndex={-1} style={eyeBtnSt}>
+                  {showCf ? <EyeOff /> : <EyeOpen />}
+                </button>
+              </div>
+            </div>
 
-        <div style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: "#6b7280" }}>
-          Already have an account?{" "}
-          <Link to="/login" style={{ color: "#14b8a6", fontWeight: 600, textDecoration: "none" }}>Sign in</Link>
+            {error && (
+              <div style={{
+                padding: "10px 14px", borderRadius: 8, fontSize: 13,
+                background: "#FEF2F2", border: "1px solid #FECACA", color: "#DC2626",
+              }}>
+                {error}
+              </div>
+            )}
+
+            <button type="submit" disabled={loading} style={{ ...btnSt(loading), marginTop: 4 }}>
+              {loading ? "Creating account..." : "Create Account →"}
+            </button>
+
+            <p style={{ fontSize: 12, color: "#94A3B8", textAlign: "center" }}>
+              By creating an account you agree to our Terms of Service.
+            </p>
+          </form>
         </div>
       </div>
     </div>
   );
 }
 
-const labelStyle = { display: "block", fontSize: 12, fontWeight: 600, color: "#9ca3af", marginBottom: 6 };
-const inputStyle = {
-  width: "100%", padding: "10px 14px", borderRadius: 10,
-  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-  color: "#e8eaf0", fontSize: 14, outline: "none", boxSizing: "border-box",
+const labelSt = {
+  display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 6,
 };
-const eyeBtnStyle = {
+const inputSt = {
+  width: "100%", padding: "10px 13px", borderRadius: 8, fontSize: 14,
+  background: "#fff", border: "1.5px solid #CBD5E1", color: "#0F172A",
+  outline: "none", boxSizing: "border-box", transition: "border-color 0.15s",
+  fontFamily: "inherit",
+};
+const eyeBtnSt = {
   position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)",
   background: "none", border: "none", cursor: "pointer",
-  color: "#6b7280", display: "flex", alignItems: "center", padding: "4px",
-  borderRadius: 4, transition: "color 0.15s",
+  color: "#94A3B8", display: "flex", alignItems: "center", padding: "4px",
 };
-const btnStyle = (loading) => ({
-  width: "100%", padding: "12px", borderRadius: 10, border: "none",
-  background: loading ? "rgba(20,184,166,0.4)" : "#14b8a6",
-  color: "#fff", fontSize: 14, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer",
-  transition: "all 0.2s",
+const btnSt = (loading) => ({
+  width: "100%", padding: "11px", borderRadius: 8, border: "none",
+  background: loading ? "#93C5FD" : "#1a56db",
+  color: "#fff", fontSize: 14, fontWeight: 700,
+  cursor: loading ? "not-allowed" : "pointer",
+  transition: "all 0.2s", fontFamily: "inherit",
+  boxShadow: loading ? "none" : "0 2px 8px rgba(26,86,219,0.3)",
 });
