@@ -1,34 +1,59 @@
 """
 Documents Router — PDF tax return + CSV P&L upload, list, delete
+Files are stored in Cloudflare R2 (persistent object storage).
 """
 
 import os
-import aiofiles
+import tempfile
+import logging
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from fastapi.responses import FileResponse
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
+from sqlalchemy import select
 
 from database import get_db
 from models import Client, TaxReturn, Financials
 from parsers.pdf_parser import extract_text_from_pdf
 from parsers.csv_parser import parse_pl_csv
-from config import settings
+import storage
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/clients", tags=["documents"])
 
-ALLOWED_PDF = {"application/pdf", "text/plain"}
-ALLOWED_CSV = {"text/csv", "application/csv", "text/plain"}
+CONTENT_TYPES = {
+    "pdf": "application/pdf",
+    "txt": "text/plain; charset=utf-8",
+    "csv": "text/csv; charset=utf-8",
+}
 
 
-async def save_upload(file: UploadFile, folder: str) -> str:
-    """Save uploaded file to disk, return file path"""
-    os.makedirs(folder, exist_ok=True)
-    file_path = os.path.join(folder, file.filename)
-    async with aiofiles.open(file_path, "wb") as f:
-        content = await file.read()
-        await f.write(content)
-    return file_path
+def _content_type(filename: str) -> str:
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    return CONTENT_TYPES.get(ext, "application/octet-stream")
+
+
+async def _parse_upload(file: UploadFile, parser_fn):
+    """
+    Read upload bytes, write to a temp file, run parser, clean up.
+    Returns (raw_bytes, parsed_result).
+    """
+    file_bytes = await file.read()
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else "bin"
+
+    with tempfile.NamedTemporaryFile(suffix=f".{ext}", delete=False) as tmp:
+        tmp.write(file_bytes)
+        tmp_path = tmp.name
+
+    try:
+        result = parser_fn(tmp_path)
+    finally:
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
+
+    return file_bytes, result
 
 
 # ── PDF Tax Return Upload ─────────────────────────────────────────────────────
@@ -40,25 +65,22 @@ async def upload_tax_return(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ):
-    """Upload prior-year PDF tax return"""
-    # Verify client exists
+    """Upload prior-year PDF tax return → store in R2."""
     result = await db.execute(select(Client).where(Client.id == client_id))
     client = result.scalar_one_or_none()
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
 
-    # Save file to disk
-    folder = os.path.join(settings.upload_dir, client_id, "tax-returns")
-    file_path = await save_upload(file, folder)
+    # Parse and upload to R2
+    file_bytes, raw_text = await _parse_upload(file, extract_text_from_pdf)
+    r2_key = f"{client_id}/tax-returns/{file.filename}"
+    storage.upload_bytes(file_bytes, r2_key, _content_type(file.filename))
 
-    # Extract text from PDF
-    raw_text = extract_text_from_pdf(file_path)
-
-    # Save to database
+    # Save record to DB (raw_file_path holds the R2 key)
     tax_return = TaxReturn(
         client_id=client_id,
         tax_year=tax_year,
-        raw_file_path=file_path,
+        raw_file_path=r2_key,
         raw_text=raw_text,
         extraction_status="done",
     )
@@ -82,25 +104,22 @@ async def upload_financials(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ):
-    """Upload current-year CSV P&L statement"""
-    # Verify client exists
+    """Upload current-year CSV P&L statement → store in R2."""
     result = await db.execute(select(Client).where(Client.id == client_id))
     client = result.scalar_one_or_none()
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
 
-    # Save file to disk
-    folder = os.path.join(settings.upload_dir, client_id, "financials")
-    file_path = await save_upload(file, folder)
+    # Parse and upload to R2
+    file_bytes, parsed_data = await _parse_upload(file, parse_pl_csv)
+    r2_key = f"{client_id}/financials/{file.filename}"
+    storage.upload_bytes(file_bytes, r2_key, _content_type(file.filename))
 
-    # Parse CSV data
-    parsed_data = parse_pl_csv(file_path)
-
-    # Save to database
+    # Save record to DB
     financials = Financials(
         client_id=client_id,
         fiscal_year=fiscal_year,
-        raw_file_path=file_path,
+        raw_file_path=r2_key,
         parsed_data=parsed_data,
     )
     db.add(financials)
@@ -118,7 +137,7 @@ async def upload_financials(
 
 @router.get("/{client_id}/documents")
 async def list_documents(client_id: str, db: AsyncSession = Depends(get_db)):
-    """List all uploaded documents for a client"""
+    """List all uploaded documents for a client."""
     result = await db.execute(select(Client).where(Client.id == client_id))
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Client not found")
@@ -138,7 +157,7 @@ async def list_documents(client_id: str, db: AsyncSession = Depends(get_db)):
             {
                 "id": t.id,
                 "tax_year": t.tax_year,
-                "filename": os.path.basename(t.raw_file_path) if t.raw_file_path else "unknown",
+                "filename": t.raw_file_path.split("/")[-1] if t.raw_file_path else "unknown",
                 "extraction_status": t.extraction_status,
                 "text_length": len(t.raw_text) if t.raw_text else 0,
                 "uploaded_at": t.created_at,
@@ -149,7 +168,7 @@ async def list_documents(client_id: str, db: AsyncSession = Depends(get_db)):
             {
                 "id": f.id,
                 "fiscal_year": f.fiscal_year,
-                "filename": os.path.basename(f.raw_file_path) if f.raw_file_path else "unknown",
+                "filename": f.raw_file_path.split("/")[-1] if f.raw_file_path else "unknown",
                 "rows": len(f.parsed_data) if f.parsed_data else 0,
                 "uploaded_at": f.created_at,
             }
@@ -158,47 +177,82 @@ async def list_documents(client_id: str, db: AsyncSession = Depends(get_db)):
     }
 
 
-# ── View Documents ────────────────────────────────────────────────────────────
+# ── View Documents (stream from R2) ──────────────────────────────────────────
 
 @router.get("/{client_id}/tax-return/{doc_id}/view")
 async def view_tax_return(client_id: str, doc_id: str, db: AsyncSession = Depends(get_db)):
-    """Serve the raw tax return file for inline viewing"""
+    """Stream tax return file from R2 for inline viewing."""
     result = await db.execute(
         select(TaxReturn).where(TaxReturn.id == doc_id, TaxReturn.client_id == client_id)
     )
     doc = result.scalar_one_or_none()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
-    if not doc.raw_file_path or not os.path.exists(doc.raw_file_path):
-        raise HTTPException(status_code=404, detail="File not found on disk")
+    if not doc.raw_file_path:
+        raise HTTPException(status_code=404, detail="File not found")
 
-    filename = os.path.basename(doc.raw_file_path)
-    ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
-    media_type = "application/pdf" if ext == "pdf" else "text/plain; charset=utf-8"
-    return FileResponse(doc.raw_file_path, media_type=media_type, filename=filename)
+    # Backward compat: old local-disk paths
+    if doc.raw_file_path.startswith("/"):
+        if os.path.exists(doc.raw_file_path):
+            from fastapi.responses import FileResponse
+            filename   = os.path.basename(doc.raw_file_path)
+            ext        = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+            media_type = "application/pdf" if ext == "pdf" else "text/plain; charset=utf-8"
+            return FileResponse(doc.raw_file_path, media_type=media_type, filename=filename)
+        raise HTTPException(status_code=404, detail="File no longer on disk")
+
+    # R2 path — download and stream
+    try:
+        file_bytes = storage.download_bytes(doc.raw_file_path)
+        filename   = doc.raw_file_path.split("/")[-1]
+        return StreamingResponse(
+            iter([file_bytes]),
+            media_type=_content_type(filename),
+            headers={"Content-Disposition": f'inline; filename="{filename}"'},
+        )
+    except Exception as e:
+        logger.error(f"R2 download error for {doc.raw_file_path}: {e}")
+        raise HTTPException(status_code=404, detail="File not available in storage")
 
 
 @router.get("/{client_id}/financials/{doc_id}/view")
 async def view_financials(client_id: str, doc_id: str, db: AsyncSession = Depends(get_db)):
-    """Serve the raw CSV file for inline viewing"""
+    """Stream CSV file from R2 for inline viewing."""
     result = await db.execute(
         select(Financials).where(Financials.id == doc_id, Financials.client_id == client_id)
     )
     doc = result.scalar_one_or_none()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
-    if not doc.raw_file_path or not os.path.exists(doc.raw_file_path):
-        raise HTTPException(status_code=404, detail="File not found on disk")
+    if not doc.raw_file_path:
+        raise HTTPException(status_code=404, detail="File not found")
 
-    filename = os.path.basename(doc.raw_file_path)
-    return FileResponse(doc.raw_file_path, media_type="text/csv; charset=utf-8", filename=filename)
+    # Backward compat
+    if doc.raw_file_path.startswith("/"):
+        if os.path.exists(doc.raw_file_path):
+            from fastapi.responses import FileResponse
+            return FileResponse(doc.raw_file_path, media_type="text/csv; charset=utf-8",
+                                filename=os.path.basename(doc.raw_file_path))
+        raise HTTPException(status_code=404, detail="File no longer on disk")
+
+    try:
+        file_bytes = storage.download_bytes(doc.raw_file_path)
+        filename   = doc.raw_file_path.split("/")[-1]
+        return StreamingResponse(
+            iter([file_bytes]),
+            media_type="text/csv; charset=utf-8",
+            headers={"Content-Disposition": f'inline; filename="{filename}"'},
+        )
+    except Exception as e:
+        logger.error(f"R2 download error for {doc.raw_file_path}: {e}")
+        raise HTTPException(status_code=404, detail="File not available in storage")
 
 
 # ── Delete Documents ──────────────────────────────────────────────────────────
 
 @router.delete("/{client_id}/tax-return/{doc_id}")
 async def delete_tax_return(client_id: str, doc_id: str, db: AsyncSession = Depends(get_db)):
-    """Delete a tax return document"""
+    """Delete a tax return document from DB and R2."""
     result = await db.execute(
         select(TaxReturn).where(TaxReturn.id == doc_id, TaxReturn.client_id == client_id)
     )
@@ -206,12 +260,14 @@ async def delete_tax_return(client_id: str, doc_id: str, db: AsyncSession = Depe
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
 
-    # Delete file from disk if it exists
-    if doc.raw_file_path and os.path.exists(doc.raw_file_path):
-        try:
-            os.remove(doc.raw_file_path)
-        except OSError:
-            pass
+    if doc.raw_file_path:
+        if doc.raw_file_path.startswith("/"):
+            try:
+                os.remove(doc.raw_file_path)
+            except OSError:
+                pass
+        else:
+            storage.delete_file(doc.raw_file_path)
 
     await db.delete(doc)
     await db.commit()
@@ -220,7 +276,7 @@ async def delete_tax_return(client_id: str, doc_id: str, db: AsyncSession = Depe
 
 @router.delete("/{client_id}/financials/{doc_id}")
 async def delete_financials(client_id: str, doc_id: str, db: AsyncSession = Depends(get_db)):
-    """Delete a financials / P&L document"""
+    """Delete a financials / P&L document from DB and R2."""
     result = await db.execute(
         select(Financials).where(Financials.id == doc_id, Financials.client_id == client_id)
     )
@@ -228,11 +284,14 @@ async def delete_financials(client_id: str, doc_id: str, db: AsyncSession = Depe
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
 
-    if doc.raw_file_path and os.path.exists(doc.raw_file_path):
-        try:
-            os.remove(doc.raw_file_path)
-        except OSError:
-            pass
+    if doc.raw_file_path:
+        if doc.raw_file_path.startswith("/"):
+            try:
+                os.remove(doc.raw_file_path)
+            except OSError:
+                pass
+        else:
+            storage.delete_file(doc.raw_file_path)
 
     await db.delete(doc)
     await db.commit()

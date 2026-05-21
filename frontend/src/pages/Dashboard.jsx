@@ -435,24 +435,6 @@ function SectionLabel({ color, label }) {
   );
 }
 
-function StatCard({ label, value, color, icon }) {
-  return (
-    <div style={{
-      flex: 1, minWidth: 120,
-      background: "#fff", border: "1px solid #E2E8F0",
-      borderRadius: 10, padding: "14px 18px",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-      borderTop: `3px solid ${color}`,
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-        <span style={{ fontSize: 14 }}>{icon}</span>
-        <span style={{ fontSize: 11, fontWeight: 600, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</span>
-      </div>
-      <div style={{ fontSize: 28, fontWeight: 800, color: color, lineHeight: 1 }}>{value}</div>
-    </div>
-  );
-}
-
 function getGreeting() {
   const h = new Date().getHours();
   if (h < 12) return "morning";

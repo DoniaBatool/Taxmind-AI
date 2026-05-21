@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     app_secret_key: str = "dev-secret-key-change-in-production"
     upload_dir: str = "./uploads"
 
+    # Cloudflare R2 Object Storage
+    r2_account_id: str = ""
+    r2_access_key_id: str = ""
+    r2_secret_access_key: str = ""
+    r2_bucket_name: str = "taxmind-documents"
+
     # CORS — comma-separated origins, e.g. "https://taxmind.onrender.com,http://localhost:3000"
     cors_origins: str = "http://localhost:3000,http://localhost:5173"
 
